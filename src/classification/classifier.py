@@ -120,7 +120,20 @@ class VehicleClassifierEngine:
             "stanford_cars_model.pt",
         )
         resolved_weights = weights_path if weights_path else (default_weights if os.path.exists(default_weights) else None)
-        resolved_backbone = "resnet50" if (resolved_weights and "resnet" in resolved_weights.lower() or (resolved_weights and weights_path is None)) else backbone_name
+        
+        # Automatically detect backbone architecture from checkpoint keys
+        resolved_backbone = backbone_name
+        if resolved_weights and os.path.exists(resolved_weights):
+            try:
+                ckpt_probe = torch.load(resolved_weights, map_location="cpu")
+                if isinstance(ckpt_probe, dict) and "layer1.0.conv1.weight" in ckpt_probe:
+                    resolved_backbone = "resnet50"
+                elif isinstance(ckpt_probe, dict) and any("stages" in k for k in ckpt_probe.keys()):
+                    resolved_backbone = "convnext_tiny"
+                elif "resnet" in resolved_weights.lower() or "stanford_cars" in resolved_weights.lower():
+                    resolved_backbone = "resnet50"
+            except Exception:
+                resolved_backbone = backbone_name
 
         # Instantiate model
         self.model = VehicleClassifier(

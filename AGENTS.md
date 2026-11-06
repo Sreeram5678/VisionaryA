@@ -178,9 +178,11 @@ Visionary/
   - [x] Tab 4: Documented failure cases with visual explanations and confidence gating
   - [x] Ready for 1-command launch (`streamlit run app/app.py`)
 
-- [ ] **Phase 8: Documentation & Viva Readiness**
-  - [ ] Generate comprehensive `docs/architecture_diagram.png`
-  - [ ] Complete `docs/design_document.md`
-  - [ ] Complete `docs/failure_cases.md` (3 distinct failure cases)
-  - [ ] Finalize `eval_P5_T20.md` with verified metrics
-  - [ ] 3-Minute pitch script & viva Q&A prep for all team members
+- [x] **Phase 8: Documentation & Viva Readiness**
+  - [x] Generate comprehensive architecture blueprint and Mermaid sequence
+  - [x] Complete `docs/design_document.md`
+  - [x] Complete `docs/failure_cases.md` (3 distinct failure cases)
+  - [x] Finalize `eval_P5_T20.md` with verified metrics and USNs on Line 1
+  - [x] 3-Minute pitch script & viva Q&A prep for all team members in `docs/viva_preparation.md`
+  - [x] React 18 + Tailwind UI build in `frontend/dist/` served directly by FastAPI
+
