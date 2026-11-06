@@ -1,18 +1,18 @@
 # AGENTS.md — Agent & Contributor Operations Manual
 
-> **Mission**: Build an intelligent, fine-grained vehicle recognition and analysis system (Make, Model, Year across 196 categories) integrating Classical Computer Vision + Deep Learning (YOLO detection + Fine-Grained Classification + Hybrid Fusion) with an interactive Streamlit UI and quantified ablation analysis for Intra-College Hackathon Evaluation.
+> **Mission**: Build an intelligent, fine-grained vehicle recognition and analysis system (Make, Model, Year across 196 categories) integrating Classical Computer Vision + Deep Learning (YOLO detection + Fine-Grained Classification + Hybrid Fusion) with a modern React + FastAPI UI and quantified ablation analysis for Intra-College Hackathon Evaluation.
 
 ---
 
 ## 1. Project & Team Identity
 - **Problem Statement ID**: P5 (Intelligent Fine-Grained Vehicle Recognition and Analysis System)
 - **Team ID**: `T20`
-- **Team Members, USNs & Viva Assignments**:
-  - `1RUA24CSE0219` - **Sreeram Lagisetty** (Lead): Pipeline Architecture, Custom Streamlit UI & Cloud Deployment
-  - `1RUA24CSE0214` - **Chakradhar K**: Fine-Grained Deep Learning Classifier (ConvNeXt/EfficientNet, 196 Classes)
-  - `1RUA24CSE0271` - **Nagarjuna VV**: Classical Computer Vision (LAB CLAHE, Canny, HSV Histograms, LBP)
-  - `1RUA24CSE0241` - **Manoj R**: Vehicle Detection & Localization (YOLOv8 BBox, IoU & ROI Extraction)
-  - `1RUA24CSE0232` - **Snehan**: Model Optimization (INT8 Quantization, ONNX), Metrics (`eval_P5_T20.md`) & Failure Cases
+- **Team Members & USNs**:
+  - `1RUA24CSE0214` - Chakradhar K (Deep Learning & Kaggle Training)
+  - `1RUA24CSE0219` - Sreeram Lagisetty (Team Lead & Full-Stack Integration)
+  - `1RUA24CSE0271` - Nagarjuna VV (Classical Computer Vision & Preprocessing)
+  - `1RUA24CSE0241` - Manoj R (Vehicle Detection & Localization)
+  - `1RUA24CSE0232` - Snehan (Optimization, Failure Analysis & Benchmarking)
 - **Dataset**: Stanford Cars Dataset (196 classes, 8,144 train / 8,041 test images)
 
 ---
@@ -52,7 +52,7 @@ The instruction sheet strictly mandates this exact filename and structure:
 ## 4. Architectural Blueprint
 
 ```
-[Input Image (Uploaded via Streamlit)]
+[Input Image (Uploaded via React Frontend)]
       │
       ├──► [Classical CV Pipeline]
       │       ├── CLAHE illumination normalization & bilateral denoising
@@ -74,8 +74,8 @@ The instruction sheet strictly mandates this exact filename and structure:
       └── Low-confidence detector flag (Confidence < threshold)
               │
               ▼
-[Interactive Streamlit Dashboard]
-      ├── Tab 1: Live Vehicle Recognition & Bounding Box
+[Modern React + Tailwind Dashboard]
+      ├── Tab 1: Live Vehicle Recognition & Bounding Box Canvas
       ├── Tab 2: Intermediate Image Processing (CLAHE, Edges, Contours, Texture)
       ├── Tab 3: Comparative Benchmarks (Classical vs DL vs Hybrid vs Quantized)
       └── Tab 4: Documented Failure Cases & Ablation Insights
@@ -83,36 +83,35 @@ The instruction sheet strictly mandates this exact filename and structure:
 
 ---
 
-## 5. Repository Directory Layout
+## 5. Repository Directory Layout (Monorepo)
 
 ```text
 Visionary/
-├── .gitignore
 ├── README.md                      # Public overview, live demo link, reproduction guide
 ├── AGENTS.md                      # THIS FILE (Always kept up-to-date)
-├── requirements.txt               # Dependencies
 ├── eval_P5_T20.md                 # Required submission metrics file
 ├── docs/
 │   ├── architecture_diagram.png   # System architecture diagram
 │   ├── design_document.md         # Comprehensive engineering design doc
 │   └── failure_cases.md           # 3 analyzed failure cases
-├── src/
-│   ├── classical/
-│   │   ├── preprocessing.py       # CLAHE, illumination & noise filters
-│   │   └── feature_extraction.py  # Canny edges, contours, color/texture
-│   ├── detection/
-│   │   └── yolo_detector.py       # YOLOv8 vehicle detection & ROI cropping
-│   ├── classification/
-│   │   ├── dataset.py             # Stanford Cars dataset loader & transforms
-│   │   ├── model.py               # Fine-grained classification backbone
-│   │   └── evaluate.py            # Top-1/Top-5 evaluation
-│   ├── hybrid/
-│   │   └── fusion.py              # Classical + Deep fusion module
-│   └── optimization/
-│       └── quantize.py            # Dynamic quantization / ONNX export
-└── app/
-    ├── app.py                     # Streamlit web application
-    └── utils.py                   # UI rendering helpers
+├── frontend/                      # React 18 + Vite + Tailwind CSS
+│   ├── package.json
+│   ├── vite.config.js
+│   └── src/
+│       ├── App.jsx
+│       └── components/
+├── backend/                       # FastAPI + PyTorch + Classical CV
+│   ├── main.py                    # Entrypoint serving React dist/ + API
+│   ├── requirements.txt           # Python dependencies
+│   ├── weights/                   # Model weights (<50MB)
+│   └── src/
+│       ├── classical/             # CLAHE, Canny, Contours, LBP
+│       ├── detection/             # YOLOv8 localization & cropping
+│       ├── classification/        # ConvNeXt inference & 196 class map
+│       ├── hybrid/                # Fusion & thresholding
+│       └── optimization/          # INT8 quantization & ONNX export
+└── notebooks/
+    └── stanford_cars_training_kaggle.ipynb # Free Kaggle GPU training
 ```
 
 ---
@@ -134,13 +133,13 @@ Visionary/
 
 ## 7. Master Hackathon Roadmap & Checklist
 
-- [ ] **Phase 1: Foundation & Project Scaffolding**
+- [x] **Phase 1: Foundation & Project Scaffolding**
   - [x] Create GitHub repository `Visionary` under `@Sreeram5678`
   - [x] Configure `.gitignore`, `requirements.txt`, and `AGENTS.md`
   - [x] Initialize `eval_P5_T20.md` with correct USNs header
-  - [ ] Configure Python 3.11 virtual environment via `uv`
+  - [x] Finalize React + FastAPI + Hugging Face Spaces + Kaggle blueprint
 
-- [ ] **Phase 2: Classical Computer Vision Pipeline (`src/classical/`)**
+- [ ] **Phase 2: Classical Computer Vision Pipeline (`backend/src/classical/`)**
   - [ ] Illumination normalization via CLAHE (RGB $\rightarrow$ LAB $\rightarrow$ CLAHE $\rightarrow$ RGB)
   - [ ] Bilateral & Gaussian noise reduction
   - [ ] Canny edge detection & hierarchical contour analysis
@@ -148,35 +147,35 @@ Visionary/
   - [ ] Geometric feature extraction (Aspect ratio, bounding box compactness)
   - [ ] Classical baseline classifier (HOG/LBP + Linear SVM) for comparison
 
-- [ ] **Phase 3: Vehicle Detection & Localization (`src/detection/`)**
+- [ ] **Phase 3: Vehicle Detection & Localization (`backend/src/detection/`)**
   - [ ] Pretrained YOLOv8 vehicle detector (cars/trucks/buses)
   - [ ] ROI bounding box extraction with padding
   - [ ] Intersection over Union (IoU) validation against Stanford Cars annotations
   - [ ] Mean Average Precision (mAP) calculation
 
-- [ ] **Phase 4: Fine-Grained Deep Learning Classifier (`src/classification/`)**
+- [ ] **Phase 4: Fine-Grained Deep Learning Classifier (`backend/src/classification/` & Kaggle)**
   - [ ] Stanford Cars 196 class mapping (Make, Model, Year)
-  - [ ] Pretrained backbone integration (ConvNeXt-Tiny / EfficientNet)
-  - [ ] High-accuracy Top-1 & Top-5 evaluation script
+  - [ ] Kaggle training notebook for ConvNeXt-Tiny / EfficientNet
+  - [ ] Export lightweight weights (< 50 MB)
   - [ ] Calibration and confidence score calculation
 
-- [ ] **Phase 5: Hybrid Integration (`src/hybrid/`)**
+- [ ] **Phase 5: Hybrid Integration (`backend/src/hybrid/`)**
   - [ ] Fuse classical visual features with deep embeddings
   - [ ] Implement low-confidence threshold fallback logic (< 50% flag)
   - [ ] Quantified comparison: Classical vs Deep Learning vs Hybrid
 
-- [ ] **Phase 6: Model Optimization (`src/optimization/`)**
+- [ ] **Phase 6: Model Optimization (`backend/src/optimization/`)**
   - [ ] PyTorch FP16 / Dynamic INT8 Quantization
   - [ ] ONNX export and runtime benchmarking
   - [ ] Latency (ms) and Model Size (MB) reduction metrics
 
-- [ ] **Phase 7: Interactive Streamlit UI & Cloud Deployment (`app/`)**
-  - [ ] Build interactive multi-tab dashboard
-  - [ ] Tab 1: Single & batch vehicle image recognition with bbox + confidence
+- [ ] **Phase 7: Modern React Frontend & FastAPI Integration (`frontend/` + `backend/`)**
+  - [ ] Build React 18 + Vite + Tailwind dashboard with dark glassmorphism
+  - [ ] Tab 1: Single & batch vehicle image recognition with interactive BBox Canvas
   - [ ] Tab 2: Intermediate Classical CV visual outputs (CLAHE, Edges, Contours, LBP)
   - [ ] Tab 3: Model comparison benchmark table
   - [ ] Tab 4: Documented failure cases with visual explanations
-  - [ ] Deploy to Streamlit Community Cloud / Hugging Face Spaces (Get live URL)
+  - [ ] Deploy single container to Hugging Face Spaces (Get live URL)
 
 - [ ] **Phase 8: Documentation & Viva Readiness**
   - [ ] Generate comprehensive `docs/architecture_diagram.png`
