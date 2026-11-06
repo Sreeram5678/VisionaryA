@@ -7,12 +7,12 @@
 ## 1. Project & Team Identity
 - **Problem Statement ID**: P5 (Intelligent Fine-Grained Vehicle Recognition and Analysis System)
 - **Team ID**: `T20`
-- **Team Members & USNs**:
-  - `1RUA24CSE0214` - Chakradhar K
-  - `1RUA24CSE0219` - Sreeram Lagisetty
-  - `1RUA24CSE0271` - Nagarjuna VV
-  - `1RUA24CSE0241` - Manoj R
-  - `1RUA24CSE0232` - Snehan
+- **Team Members, USNs & Viva Assignments**:
+  - `1RUA24CSE0219` - **Sreeram Lagisetty** (Lead): Pipeline Architecture, Custom Streamlit UI & Cloud Deployment
+  - `1RUA24CSE0214` - **Chakradhar K**: Fine-Grained Deep Learning Classifier (ConvNeXt/EfficientNet, 196 Classes)
+  - `1RUA24CSE0271` - **Nagarjuna VV**: Classical Computer Vision (LAB CLAHE, Canny, HSV Histograms, LBP)
+  - `1RUA24CSE0241` - **Manoj R**: Vehicle Detection & Localization (YOLOv8 BBox, IoU & ROI Extraction)
+  - `1RUA24CSE0232` - **Snehan**: Model Optimization (INT8 Quantization, ONNX), Metrics (`eval_P5_T20.md`) & Failure Cases
 - **Dataset**: Stanford Cars Dataset (196 classes, 8,144 train / 8,041 test images)
 
 ---
