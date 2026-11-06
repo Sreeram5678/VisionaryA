@@ -88,7 +88,7 @@ def render_top5_chart(top5_predictions: List[CarPrediction]) -> go.Figure:
 
 def ensure_demo_samples() -> Dict[str, str]:
     """
-    Ensures sample demo images exist in app/samples/ for one-click testing.
+    Returns real high-resolution vehicle demo images in app/samples/ for one-click testing.
     
     Returns:
         Dictionary mapping preset label to absolute file path.
@@ -96,58 +96,14 @@ def ensure_demo_samples() -> Dict[str, str]:
     os.makedirs(SAMPLES_DIR, exist_ok=True)
 
     samples = {
-        "Sport Coupe (High Contrast)": os.path.join(SAMPLES_DIR, "demo_coupe.png"),
-        "SUV (Standard Day)": os.path.join(SAMPLES_DIR, "demo_suv.png"),
-        "Low-Light Night Car (CLAHE Demo)": os.path.join(SAMPLES_DIR, "demo_night.png"),
-        "Non-Car Scene (Zero-Crash Test)": os.path.join(SAMPLES_DIR, "demo_landscape.png"),
+        "Audi R8 Supercar (Real Photo)": os.path.join(SAMPLES_DIR, "real_audi_r8.jpg"),
+        "BMW M3 Sports Coupe (Real Photo)": os.path.join(SAMPLES_DIR, "real_bmw_coupe.jpg"),
+        "Off-Road 4x4 SUV (Real Photo)": os.path.join(SAMPLES_DIR, "real_land_rover_suv.jpg"),
+        "Night Driving Adverse Light (Real Photo)": os.path.join(SAMPLES_DIR, "real_night_drive.jpg"),
+        "Scenic Mountain Road (Non-Car Negative)": os.path.join(SAMPLES_DIR, "real_scenic_landscape.jpg"),
     }
 
-    # Generate synthetic demo presets if not present
-    if not os.path.exists(samples["Sport Coupe (High Contrast)"]):
-        # Red Sport Coupe simulation
-        img = np.full((320, 480, 3), 180, dtype=np.uint8)
-        # Road asphalt
-        img[220:, :] = [60, 60, 65]
-        # Car body (Red)
-        cv2.rectangle(img, (90, 140), (410, 230), (220, 25, 25), -1)
-        # Cabin / Roof
-        pts = np.array([[160, 140], [210, 90], [330, 90], [370, 140]], np.int32)
-        cv2.fillPoly(img, [pts], (40, 40, 50))
-        # Wheels
-        cv2.circle(img, (160, 230), 32, (20, 20, 20), -1)
-        cv2.circle(img, (340, 230), 32, (20, 20, 20), -1)
-        cv2.circle(img, (160, 230), 16, (180, 180, 180), -1)
-        cv2.circle(img, (340, 230), 16, (180, 180, 180), -1)
-        # Headlight & Taillight
-        cv2.rectangle(img, (400, 160), (410, 180), (240, 240, 255), -1)
-        cv2.rectangle(img, (90, 160), (98, 180), (180, 0, 0), -1)
-        cv2.imwrite(samples["Sport Coupe (High Contrast)"], cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-
-    if not os.path.exists(samples["SUV (Standard Day)"]):
-        # Blue SUV simulation
-        img = np.full((320, 480, 3), 210, dtype=np.uint8)
-        img[230:, :] = [70, 70, 75]
-        # SUV Boxy body (Navy Blue)
-        cv2.rectangle(img, (70, 110), (420, 240), (30, 80, 190), -1)
-        # Roof & Windows
-        cv2.rectangle(img, (120, 70), (370, 130), (50, 55, 65), -1)
-        # Wheels
-        cv2.circle(img, (150, 240), 38, (25, 25, 25), -1)
-        cv2.circle(img, (340, 240), 38, (25, 25, 25), -1)
-        cv2.circle(img, (150, 240), 18, (190, 190, 190), -1)
-        cv2.circle(img, (340, 240), 18, (190, 190, 190), -1)
-        cv2.imwrite(samples["SUV (Standard Day)"], cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-
-    if not os.path.exists(samples["Low-Light Night Car (CLAHE Demo)"]):
-        # Severely underexposed / dark night image
-        img = np.full((320, 480, 3), 20, dtype=np.uint8)
-        # Faint car body
-        cv2.rectangle(img, (90, 140), (410, 230), (45, 10, 10), -1)
-        cv2.circle(img, (160, 230), 32, (10, 10, 10), -1)
-        cv2.circle(img, (340, 230), 32, (10, 10, 10), -1)
-        # Street lamp glare in corner
-        cv2.circle(img, (40, 40), 30, (255, 255, 200), -1)
-        cv2.imwrite(samples["Low-Light Night Car (CLAHE Demo)"], cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+    return samples
 
     if not os.path.exists(samples["Non-Car Scene (Zero-Crash Test)"]):
         # Mountain / Tree landscape with no vehicle

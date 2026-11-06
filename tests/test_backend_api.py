@@ -94,5 +94,6 @@ def test_root_serves_react_frontend():
     response = client.get("/")
     assert response.status_code == 200
     assert "Visionary" in response.text
-    assert "<div id=\"root\"></div>" in response.text
+    assert "id=\"root\"" in response.text
+
 

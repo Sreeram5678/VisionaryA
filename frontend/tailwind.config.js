@@ -8,12 +8,16 @@ export default {
   theme: {
     extend: {
       colors: {
+        neon: {
+          cyan: '#00D4FF',
+          green: '#00FF88',
+        },
         cyber: {
-          bg: '#0a0d14',
-          card: '#111726',
-          border: '#1e293b',
-          accent: '#38bdf8',
-          emerald: '#10b981',
+          bg: '#050810',
+          card: '#080f1e',
+          border: '#0f2040',
+          accent: '#00D4FF',
+          emerald: '#00FF88',
           amber: '#f59e0b',
           rose: '#f43f5e',
         }
@@ -21,7 +25,10 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
-      }
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
     },
   },
   plugins: [],
