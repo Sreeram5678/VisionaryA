@@ -47,6 +47,8 @@ datasets/
 *.engine
 weights/
 runs/
+.agents/
+.claude/
 
 # IDE & OS
 .DS_Store

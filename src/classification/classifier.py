@@ -6,6 +6,7 @@ and computes Top-1 and Top-5 class probabilities alongside penultimate embedding
 """
 
 from dataclasses import dataclass, field
+import os
 import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 import cv2
@@ -112,15 +113,24 @@ class VehicleClassifierEngine:
             ),
         ])
 
+        # Check for default trained weights on disk
+        default_weights = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "weights",
+            "stanford_cars_model.pt",
+        )
+        resolved_weights = weights_path if weights_path else (default_weights if os.path.exists(default_weights) else None)
+        resolved_backbone = "resnet50" if (resolved_weights and "resnet" in resolved_weights.lower() or (resolved_weights and weights_path is None)) else backbone_name
+
         # Instantiate model
         self.model = VehicleClassifier(
-            backbone_name=backbone_name,
+            backbone_name=resolved_backbone,
             num_classes=196,
-            pretrained=True if weights_path is None else False,
+            pretrained=True if resolved_weights is None else False,
         )
 
-        if weights_path:
-            self.model.load_weights(weights_path, device=self.device)
+        if resolved_weights:
+            self.model.load_weights(resolved_weights, device=self.device)
 
         self.model.to(self.device)
         self.model.eval()

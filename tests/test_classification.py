@@ -127,7 +127,7 @@ def test_classifier_engine_predict_numpy():
     assert isinstance(result, ClassificationResult)
     assert isinstance(result.top1, CarPrediction)
     assert len(result.top5) == 5
-    assert result.embedding.shape == (768,)
+    assert result.embedding.shape[0] in (768, 2048)
     assert result.inference_time_ms > 0
 
     # Top-1 should have highest probability
@@ -140,7 +140,7 @@ def test_classifier_engine_predict_numpy():
     d = result.to_dict()
     assert "top1" in d
     assert "top5" in d
-    assert d["embedding_dim"] == 768
+    assert d["embedding_dim"] in (768, 2048)
 
 
 def test_classifier_engine_pil_input():

@@ -20,7 +20,7 @@ class VehicleClassifier(nn.Module):
 
     def __init__(
         self,
-        backbone_name: str = "convnext_tiny",
+        backbone_name: str = "resnet50",
         num_classes: int = 196,
         pretrained: bool = True,
         dropout_rate: float = 0.2,
@@ -29,7 +29,7 @@ class VehicleClassifier(nn.Module):
         Initializes the VehicleClassifier.
         
         Args:
-            backbone_name: Architecture name from timm ('convnext_tiny', 'efficientnet_b3').
+            backbone_name: Architecture name from timm ('resnet50', 'convnext_tiny', 'efficientnet_b3').
             num_classes: Number of target categories (Stanford Cars: 196).
             pretrained: Whether to load ImageNet pretrained backbone weights.
             dropout_rate: Dropout probability before the final classification head.
@@ -38,17 +38,15 @@ class VehicleClassifier(nn.Module):
         self.backbone_name = backbone_name
         self.num_classes = num_classes
 
-        # Instantiate feature extractor with pooled output (num_classes=0)
-        self.backbone = timm.create_model(
+        # Create full model with num_classes
+        self.model = timm.create_model(
             backbone_name,
             pretrained=pretrained,
-            num_classes=0,
+            num_classes=num_classes,
+            drop_rate=dropout_rate,
         )
 
-        # Automatically determine penultimate embedding dimension
-        self.embedding_dim = self.backbone.num_features
-        self.dropout = nn.Dropout(p=dropout_rate)
-        self.classifier = nn.Linear(self.embedding_dim, num_classes)
+        self.embedding_dim = self.model.num_features
 
     def forward(
         self,
@@ -56,35 +54,26 @@ class VehicleClassifier(nn.Module):
         return_embedding: bool = False,
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """
-        Forward pass through backbone and classification head.
-        
-        Args:
-            x: Input tensor of shape (B, 3, H, W).
-            return_embedding: If True, returns (logits, embedding).
-            
-        Returns:
-            Logits tensor (B, num_classes), or tuple (logits, embedding).
+        Forward pass through model and penultimate feature extractor.
         """
-        # Extract penultimate pooled embedding [B, embedding_dim]
-        embedding = self.backbone(x)
-        
-        # Classification head
-        logits = self.classifier(self.dropout(embedding))
+        logits = self.model(x)
 
         if return_embedding:
+            # Extract pooled penultimate feature representation
+            feat = self.model.forward_features(x)
+            if hasattr(self.model, "forward_head"):
+                embedding = self.model.forward_head(feat, pre_logits=True)
+            elif hasattr(self.model, "global_pool"):
+                embedding = self.model.global_pool(feat).flatten(1)
+            else:
+                embedding = feat.flatten(1)
             return logits, embedding
+
         return logits
 
     def load_weights(self, weights_path: str, device: Union[str, torch.device] = "cpu") -> bool:
         """
         Loads fine-tuned model checkpoint from disk.
-        
-        Args:
-            weights_path: Path to .pt or .pth checkpoint file.
-            device: Target device string or torch.device.
-            
-        Returns:
-            True if weights successfully loaded, False otherwise.
         """
         try:
             checkpoint = torch.load(weights_path, map_location=device)
@@ -98,13 +87,20 @@ class VehicleClassifier(nn.Module):
             else:
                 state_dict = checkpoint
 
-            # Strip possible 'module.' prefix from DataParallel training
-            cleaned_state_dict = {}
+            # Strip 'module.' or 'model.' prefixes
+            cleaned = {}
             for k, v in state_dict.items():
-                new_key = k[7:] if k.startswith("module.") else k
-                cleaned_state_dict[new_key] = v
+                k_clean = k
+                if k_clean.startswith("module."):
+                    k_clean = k_clean[7:]
+                cleaned[k_clean] = v
 
-            self.load_state_dict(cleaned_state_dict, strict=False)
+            # Load into self.model or self
+            try:
+                self.model.load_state_dict(cleaned, strict=True)
+            except Exception:
+                self.load_state_dict(cleaned, strict=False)
+
             self.eval()
             return True
         except Exception as e:
