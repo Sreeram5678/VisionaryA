@@ -165,10 +165,10 @@ Visionary/
   - [x] Implement low-confidence threshold fallback logic (< 50% flag)
   - [x] Quantified comparison: Classical vs Deep Learning vs Hybrid
 
-- [ ] **Phase 6: Model Optimization (`backend/src/optimization/`)**
-  - [ ] PyTorch FP16 / Dynamic INT8 Quantization
-  - [ ] ONNX export and runtime benchmarking
-  - [ ] Latency (ms) and Model Size (MB) reduction metrics
+- [x] **Phase 6: Model Optimization (`src/optimization/`)**
+  - [x] PyTorch FP16 / Dynamic INT8 Quantization
+  - [x] ONNX export and runtime benchmarking
+  - [x] Latency (ms) and Model Size (MB) reduction metrics
 
 - [ ] **Phase 7: Modern React Frontend & FastAPI Integration (`frontend/` + `backend/`)**
   - [ ] Build React 18 + Vite + Tailwind dashboard with dark glassmorphism
