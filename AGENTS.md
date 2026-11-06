@@ -140,13 +140,13 @@ Visionary/
   - [x] Initialize `eval_P5_T20.md` with correct USNs header
   - [x] Finalize React + FastAPI + Hugging Face Spaces + Kaggle blueprint
 
-- [ ] **Phase 2: Classical Computer Vision Pipeline (`backend/src/classical/`)**
-  - [ ] Illumination normalization via CLAHE (RGB $\rightarrow$ LAB $\rightarrow$ CLAHE $\rightarrow$ RGB)
-  - [ ] Bilateral & Gaussian noise reduction
-  - [ ] Canny edge detection & hierarchical contour analysis
-  - [ ] Color histograms (HSV space) + Texture (Local Binary Patterns - LBP)
-  - [ ] Geometric feature extraction (Aspect ratio, bounding box compactness)
-  - [ ] Classical baseline classifier (HOG/LBP + Linear SVM) for comparison
+- [x] **Phase 2: Classical Computer Vision Pipeline (`src/classical/`)**
+  - [x] Illumination normalization via CLAHE (RGB $\rightarrow$ LAB $\rightarrow$ CLAHE $\rightarrow$ RGB)
+  - [x] Bilateral & Gaussian noise reduction
+  - [x] Canny edge detection & hierarchical contour analysis
+  - [x] Color histograms (HSV space) + Texture (Local Binary Patterns - LBP)
+  - [x] Geometric feature extraction (Aspect ratio, bounding box compactness)
+  - [x] Classical feature extractor & visualization pipeline with comprehensive test suite
 
 - [ ] **Phase 3: Vehicle Detection & Localization (`backend/src/detection/`)**
   - [ ] Pretrained YOLOv8 vehicle detector (cars/trucks/buses)
