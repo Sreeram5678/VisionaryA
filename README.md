@@ -13,18 +13,6 @@
 
 ---
 
-## 👥 Team T20 & Component Ownership
-
-| USN | Teammate | Core Focus & Rubric Ownership |
-| :--- | :--- | :--- |
-| `1RUA24CSE0219` | **Sreeram Lagisetty** | **Team Lead, Architecture & Full-Stack Integration** (FastAPI + React bridge, HF Spaces deploy) |
-| `1RUA24CSE0214` | **Chakradhar K** | **Deep Learning & Kaggle Training** (ConvNeXt-Tiny fine-tuning on 196 Stanford Cars classes) |
-| `1RUA24CSE0271` | **Nagarjuna VV** | **Classical Computer Vision** (CLAHE lighting fix, Canny edges, contours, HSV & LBP features) |
-| `1RUA24CSE0241` | **Manoj R** | **Vehicle Detection & Localization** (YOLOv8 vehicle bounding box extraction & IoU evaluation) |
-| `1RUA24CSE0232` | **Snehan** | **Optimization, Failure Analysis & Benchmarking** (INT8 quantization, 3 failure cases, `eval_P5_T20.md`) |
-
----
-
 ## 📐 Master Architectural Blueprint
 
 ```mermaid

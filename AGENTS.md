@@ -128,6 +128,7 @@ Visionary/
    - What if a user uploads a photo of a cat or an empty road? The detector must report *"No vehicle detected"*, not crash with an index error.
    - What if image is corrupted or zero bytes? Catch errors and display a clean alert.
 4. **No Secrets**: Never commit tokens, API keys, or private paths.
+5. **No Team Members Table in `README.md`**: Do NOT add the team members table (USNs, names, roles) to `README.md`. Team USNs must only reside in `eval_P5_T20.md` (mandatory evaluation header) and `AGENTS.md`.
 
 ---
 
