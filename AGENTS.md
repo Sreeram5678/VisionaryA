@@ -148,11 +148,11 @@ Visionary/
   - [x] Geometric feature extraction (Aspect ratio, bounding box compactness)
   - [x] Classical feature extractor & visualization pipeline with comprehensive test suite
 
-- [ ] **Phase 3: Vehicle Detection & Localization (`backend/src/detection/`)**
-  - [ ] Pretrained YOLOv8 vehicle detector (cars/trucks/buses)
-  - [ ] ROI bounding box extraction with padding
-  - [ ] Intersection over Union (IoU) validation against Stanford Cars annotations
-  - [ ] Mean Average Precision (mAP) calculation
+- [x] **Phase 3: Vehicle Detection & Localization (`src/detection/`)**
+  - [x] Pretrained YOLOv8 vehicle detector (cars/trucks/buses)
+  - [x] ROI bounding box extraction with padding
+  - [x] Intersection over Union (IoU) validation against Stanford Cars annotations
+  - [x] Mean Average Precision (mAP) calculation
 
 - [ ] **Phase 4: Fine-Grained Deep Learning Classifier (`backend/src/classification/` & Kaggle)**
   - [ ] Stanford Cars 196 class mapping (Make, Model, Year)
