@@ -13,17 +13,6 @@
 
 ---
 
-## 👥 Team Members (Team T20)
-| USN | Name | Role |
-| :--- | :--- | :--- |
-| `1RUA24CSE0219` | **Sreeram Lagisetty** | Team Lead, Architecture & Full-Stack App |
-| `1RUA24CSE0214` | **Chakradhar K** | Deep Learning & Fine-Grained Classification |
-| `1RUA24CSE0271` | **Nagarjuna VV** | Classical Computer Vision & Preprocessing |
-| `1RUA24CSE0241` | **Manoj R** | Vehicle Detection & Localization (YOLO) |
-| `1RUA24CSE0232` | **Snehan** | Model Optimization, Quantization & Evaluation |
-
----
-
 ## 📌 Problem Overview
 Vehicle recognition in the wild poses significant computer vision challenges: visually similar body styles across different model years, variable illumination conditions, severe reflections, and partial occlusions. 
 
