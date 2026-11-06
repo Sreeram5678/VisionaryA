@@ -160,10 +160,10 @@ Visionary/
   - [x] Export lightweight weights (< 50 MB)
   - [x] Calibration and confidence score calculation
 
-- [ ] **Phase 5: Hybrid Integration (`backend/src/hybrid/`)**
-  - [ ] Fuse classical visual features with deep embeddings
-  - [ ] Implement low-confidence threshold fallback logic (< 50% flag)
-  - [ ] Quantified comparison: Classical vs Deep Learning vs Hybrid
+- [x] **Phase 5: Hybrid Integration (`backend/src/hybrid/`)**
+  - [x] Fuse classical visual features with deep embeddings
+  - [x] Implement low-confidence threshold fallback logic (< 50% flag)
+  - [x] Quantified comparison: Classical vs Deep Learning vs Hybrid
 
 - [ ] **Phase 6: Model Optimization (`backend/src/optimization/`)**
   - [ ] PyTorch FP16 / Dynamic INT8 Quantization
