@@ -154,11 +154,11 @@ Visionary/
   - [x] Intersection over Union (IoU) validation against Stanford Cars annotations
   - [x] Mean Average Precision (mAP) calculation
 
-- [ ] **Phase 4: Fine-Grained Deep Learning Classifier (`backend/src/classification/` & Kaggle)**
-  - [ ] Stanford Cars 196 class mapping (Make, Model, Year)
-  - [ ] Kaggle training notebook for ConvNeXt-Tiny / EfficientNet
-  - [ ] Export lightweight weights (< 50 MB)
-  - [ ] Calibration and confidence score calculation
+- [x] **Phase 4: Fine-Grained Deep Learning Classifier (`src/classification/` & Kaggle)**
+  - [x] Stanford Cars 196 class mapping (Make, Model, Year)
+  - [x] Kaggle training notebook for ConvNeXt-Tiny / EfficientNet
+  - [x] Export lightweight weights (< 50 MB)
+  - [x] Calibration and confidence score calculation
 
 - [ ] **Phase 5: Hybrid Integration (`backend/src/hybrid/`)**
   - [ ] Fuse classical visual features with deep embeddings
