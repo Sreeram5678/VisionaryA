@@ -5,8 +5,18 @@ Problem Statement: P5 | Team ID: T20
 
 import io
 import os
+import sys
 import time
 from PIL import Image
+
+# Ensure project root and app directory are in sys.path
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+if CURRENT_DIR not in sys.path:
+    sys.path.insert(0, CURRENT_DIR)
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -14,11 +24,19 @@ import plotly.graph_objects as go
 import streamlit as st
 import torch
 
-from app.utils import (
-    ensure_demo_samples,
-    get_hybrid_recognizer,
-    render_top5_chart,
-)
+try:
+    from utils import (
+        ensure_demo_samples,
+        get_hybrid_recognizer,
+        render_top5_chart,
+    )
+except (ImportError, ModuleNotFoundError):
+    from app.utils import (
+        ensure_demo_samples,
+        get_hybrid_recognizer,
+        render_top5_chart,
+    )
+
 from src.hybrid import (
     get_comparative_benchmarks,
 )
