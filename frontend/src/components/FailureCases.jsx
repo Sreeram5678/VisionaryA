@@ -1,134 +1,127 @@
 import React from 'react';
-import { AlertTriangle, ShieldCheck, CheckCircle2, Flame, HelpCircle } from 'lucide-react';
+import { AlertTriangle, ShieldCheck, Flame, HelpCircle, CheckCircle2 } from 'lucide-react';
+
+const CASE_ACCENTS = ['#C47C3A', '#9B3A3A', '#7C4A1E'];
 
 export default function FailureCases({ failureCases }) {
-  if (!failureCases || failureCases.length === 0) {
+  if (!failureCases?.length) {
     return (
-      <div className="glass-card rounded-2xl p-12 text-center text-slate-400">
-        <AlertTriangle className="w-10 h-10 mx-auto text-slate-600 mb-3" />
-        <h3 className="text-lg font-bold text-slate-300">Loading Failure Cases...</h3>
+      <div className="card p-16 text-center space-y-3">
+        <AlertTriangle className="w-10 h-10 mx-auto text-[#C4A882]" />
+        <h3 className="text-base font-bold text-[#4A2C0E]">Loading Failure Cases…</h3>
       </div>
     );
   }
 
+  const severityStyle = (s) =>
+    s === 'Critical' ? 'badge-rose' :
+    s === 'High'     ? 'badge-amber' :
+                       'badge-cream';
+
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="glass-card rounded-2xl p-6 border border-slate-800">
-        <div className="flex items-center space-x-3">
-          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
-            <AlertTriangle className="w-6 h-6" />
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="card p-5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+               style={{ background: 'linear-gradient(135deg,#FDF3E7,#F4E4CB)', border:'1px solid #EAD9C6' }}>
+            <AlertTriangle className="w-5 h-5 text-[#C47C3A]" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">
-              Documented Failure Cases & Viva Defense Prep
-            </h2>
-            <p className="text-sm text-slate-400">
-              Mandatory Hackathon Challenge Requirement: In-depth root-cause analysis and automated mitigations.
+            <h2 className="text-base font-bold text-[#2C1A0E]">Documented Failure Cases & Viva Defence</h2>
+            <p className="text-xs text-[#A0825A] mt-0.5">
+              Mandatory rubric requirement — root-cause analysis and automated mitigations.
             </p>
           </div>
         </div>
       </div>
 
-      {/* 3 Failure Case Cards */}
+      {/* Case Cards */}
       <div className="space-y-4">
-        {failureCases.map((c, idx) => (
-          <div
-            key={idx}
-            className="glass-card rounded-2xl p-6 border border-slate-800 space-y-4 hover:border-slate-700 transition"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider block font-bold">
-                  {c.subtitle}
-                </span>
-                <h3 className="text-lg font-bold text-white mt-0.5">
-                  {c.title}
-                </h3>
-              </div>
+        {failureCases.map((c, idx) => {
+          const accent = CASE_ACCENTS[idx] ?? '#C4A882';
+          return (
+            <div key={idx} className="card p-6 space-y-4"
+                 style={{ borderLeftWidth: '4px', borderLeftColor: accent }}>
 
-              <div className="flex items-center space-x-2">
-                <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
-                  c.severity === 'Critical'
-                    ? 'bg-rose-950/60 text-rose-300 border-rose-800/60'
-                    : c.severity === 'High'
-                    ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
-                    : 'bg-sky-950/60 text-sky-300 border-sky-800/60'
-                }`}>
-                  {c.severity} Severity
-                </span>
-                <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 flex items-center space-x-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Mitigated</span>
-                </span>
-              </div>
-            </div>
-
-            {/* Example Citation */}
-            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 text-xs">
-              <span className="font-bold text-slate-400">Concrete Example: </span>
-              <span className="text-slate-200">{c.example}</span>
-            </div>
-
-            {/* Observed Behavior & Root Cause */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="space-y-1 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800">
-                <div className="flex items-center space-x-1.5 text-amber-400 font-bold uppercase tracking-wider">
-                  <Flame className="w-3.5 h-3.5" />
-                  <span>Observed Failure Behavior</span>
+              {/* Case Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-widest"
+                        style={{ color: accent }}>{c.subtitle}</span>
+                  <h3 className="text-base font-bold text-[#2C1A0E] mt-0.5">{c.title}</h3>
                 </div>
-                <p className="text-slate-300 leading-relaxed pt-1">
-                  {c.observed_behavior}
-                </p>
-              </div>
-
-              <div className="space-y-1 bg-slate-900/40 p-3.5 rounded-xl border border-slate-800">
-                <div className="flex items-center space-x-1.5 text-rose-400 font-bold uppercase tracking-wider">
-                  <HelpCircle className="w-3.5 h-3.5" />
-                  <span>Optical / Mathematical Root Cause</span>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`badge ${severityStyle(c.severity)}`}>{c.severity} Severity</span>
+                  <span className="badge badge-sage flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Mitigated
+                  </span>
                 </div>
-                <p className="text-slate-300 leading-relaxed pt-1">
-                  {c.root_cause}
-                </p>
               </div>
-            </div>
 
-            {/* Architectural Mitigation */}
-            <div className="p-4 rounded-xl bg-cyan-950/20 border border-cyan-500/30 text-xs space-y-1">
-              <div className="flex items-center space-x-1.5 text-cyan-400 font-bold uppercase tracking-wider">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Engineered System Mitigation</span>
+              {/* Example */}
+              <div className="p-3.5 rounded-xl border text-xs"
+                   style={{ background: '#FAF0E2', borderColor: '#EAD9C6', borderLeftWidth:'3px', borderLeftColor: accent }}>
+                <span className="font-bold text-[#7A4F28]">Concrete Example: </span>
+                <span className="text-[#4A2C0E]">{c.example}</span>
               </div>
-              <p className="text-slate-200 leading-relaxed pt-1">
-                {c.mitigation}
-              </p>
+
+              {/* Two columns */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-4 rounded-xl border border-[#F5D68A] bg-[#FFFBEB] space-y-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5 text-[#D97706]" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#D97706]">Observed Failure</span>
+                  </div>
+                  <p className="text-xs text-[#4A2C0E] leading-relaxed">{c.observed_behavior}</p>
+                </div>
+
+                <div className="p-4 rounded-xl border border-[#FFC4C4] bg-[#FFF1F0] space-y-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <HelpCircle className="w-3.5 h-3.5 text-[#E11D48]" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#E11D48]">Root Cause</span>
+                  </div>
+                  <p className="text-xs text-[#4A2C0E] leading-relaxed">{c.root_cause}</p>
+                </div>
+              </div>
+
+              {/* Mitigation */}
+              <div className="p-4 rounded-xl space-y-1.5"
+                   style={{ background: '#FDF3E7', border: `1px solid ${accent}44`, borderLeftWidth:'3px', borderLeftColor: accent }}>
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4" style={{ color: accent }} />
+                  <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: accent }}>Engineered Mitigation</span>
+                </div>
+                <p className="text-xs text-[#4A2C0E] leading-relaxed">{c.mitigation}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Confidence Gating & Calibration Policy */}
-      <div className="glass-card rounded-2xl p-6 border border-slate-800 space-y-3">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Confidence Calibration & Gating Protocol</span>
-        </h3>
-        <p className="text-xs text-slate-300 leading-relaxed">
-          Standard deep networks are notoriously overconfident on out-of-distribution or occluded data. Visionary enforces a two-tier verification policy:
+      {/* Confidence Calibration */}
+      <div className="card p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-[#2D6A2D]" />
+          <h3 className="text-sm font-bold text-[#2C1A0E]">Confidence Calibration & Gating Protocol</h3>
+        </div>
+        <p className="text-xs text-[#7A5C3E] leading-relaxed">
+          Deep networks are notoriously over-confident on out-of-distribution data. Visionary enforces a two-tier verification policy.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
-          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-            <span className="font-bold text-emerald-400 block mb-1">Confident (&gt; 50%, Margin &ge; 5%)</span>
-            <p className="text-slate-400 text-[11px]">Primary vehicle match passed with clear statistical separation. Result displayed as definitive match.</p>
-          </div>
-          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-            <span className="font-bold text-amber-400 block mb-1">Ambiguous (Margin &lt; 5%)</span>
-            <p className="text-slate-400 text-[11px]">Top 2 candidate classes differ by less than 5% probability. User is presented with adjacent trim candidates.</p>
-          </div>
-          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-            <span className="font-bold text-rose-400 block mb-1">Low Confidence (&lt; 50%)</span>
-            <p className="text-slate-400 text-[11px]">Automated warning flagged. Hallucination avoided on non-car images, severe occlusions, or extreme shadows.</p>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { label: 'Confident (>50%, margin ≥5%)', color: '#2D6A2D', borderColor: '#B4D4B4', bg: '#EEF4EE',
+              desc: 'Primary match passed with clear statistical separation. Displayed as definitive result.' },
+            { label: 'Ambiguous (margin <5%)', color: '#B45309', borderColor: '#FDE68A', bg: '#FFFBEB',
+              desc: 'Top 2 candidates differ by <5% probability. User shown adjacent trim candidates.' },
+            { label: 'Low Confidence (<50%)', color: '#E11D48', borderColor: '#FFC4C4', bg: '#FFF1F0',
+              desc: 'Automated warning raised. Hallucination prevented on non-car or heavily occluded images.' },
+          ].map(({ label, color, borderColor, bg, desc }) => (
+            <div key={label} className="p-3.5 rounded-xl border text-xs" style={{ background: bg, borderColor }}>
+              <span className="font-bold block mb-1" style={{ color }}>{label}</span>
+              <p className="text-[#4A2C0E] leading-relaxed opacity-80">{desc}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

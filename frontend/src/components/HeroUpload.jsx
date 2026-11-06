@@ -1,69 +1,23 @@
-import React, { useRef, useState } from 'react';
-import { Upload, Camera, Sparkles, Image as ImageIcon, Loader2, ChevronRight } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { Upload, Camera, Sparkles, Image as ImageIcon, Loader2, Play, CheckCircle2, ChevronRight, Layers } from 'lucide-react';
 
-const CATEGORY_COLORS = {
-  luxury:   { border: '#00D4FF', badge: 'bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/30' },
-  sports:   { border: '#00FF88', badge: 'bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/30' },
-  suv:      { border: '#8B5CF6', badge: 'bg-[#8B5CF6]/10 text-[#8B5CF6] border-[#8B5CF6]/30' },
-  sedan:    { border: '#60a5fa', badge: 'bg-blue-500/10 text-blue-300 border-blue-500/30' },
-  truck:    { border: '#f59e0b', badge: 'bg-amber-500/10 text-amber-300 border-amber-500/30' },
-  default:  { border: '#00D4FF', badge: 'bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/30' },
-};
-
-function getCategoryStyle(category) {
-  const key = (category || '').toLowerCase();
-  return CATEGORY_COLORS[key] || CATEGORY_COLORS.default;
-}
-
-const PIPELINE_STAGES = [
-  'Initializing YOLOv8 Detector…',
-  'Running CLAHE Normalization…',
-  'Extracting Canny Edges…',
-  'Running ConvNeXt Classifier…',
-  'Fusing Hybrid Embeddings…',
-  'Finalizing Results…',
-];
-
-function LoadingZone() {
-  const [stage] = React.useState(() => Math.floor(Math.random() * PIPELINE_STAGES.length));
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-5 py-10">
-      {/* Animated spinner */}
-      <div className="relative w-16 h-16">
-        <div className="spinner-ring absolute inset-0" />
-        <div
-          className="absolute inset-2 rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(0,212,255,0.12), transparent)' }}
-        />
-        <Loader2 className="absolute inset-0 m-auto w-6 h-6 text-[#00D4FF] animate-spin" />
-      </div>
-
-      {/* Pulsing dots */}
-      <div className="flex gap-1.5">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="w-1.5 h-1.5 rounded-full bg-[#00D4FF]"
-            style={{ animation: `ping 1.2s ease-in-out ${i * 0.2}s infinite`, opacity: 0.7 }}
-          />
-        ))}
-      </div>
-
-      <div className="text-center space-y-1">
-        <p className="text-sm font-semibold text-white">Analyzing Vehicle Dynamics</p>
-        <p className="text-xs text-slate-400 font-mono">{PIPELINE_STAGES[stage]}</p>
-      </div>
-    </div>
-  );
-}
-
-export default function HeroUpload({ onAnalyzeFile, onAnalyzePreset, loading, samples }) {
+export default function HeroUpload({ onAnalyzeFile, onAnalyzePreset, onAnalyzeTestSample, loading, samples }) {
   const fileInputRef = useRef(null);
   const [dragActive, setDragActive] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [activePresetId, setActivePresetId] = useState('real_audi_r8');
+  const [testSamples, setTestSamples] = useState([]);
+  const [activeTab, setActiveTab] = useState('presets'); // 'presets' | 'testset'
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+
+  useEffect(() => {
+    // Fetch official Stanford Cars test set samples
+    fetch('/api/test-samples')
+      .then((res) => (res.ok ? res.json() : { test_samples: [] }))
+      .then((data) => setTestSamples(data.test_samples || []))
+      .catch((e) => console.warn('Could not fetch test samples:', e));
+  }, []);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -94,7 +48,7 @@ export default function HeroUpload({ onAnalyzeFile, onAnalyzePreset, loading, sa
     setShowCamera(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
+        video: { facingMode: 'environment' },
       });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -108,7 +62,7 @@ export default function HeroUpload({ onAnalyzeFile, onAnalyzePreset, loading, sa
 
   const stopCamera = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
     setShowCamera(false);
@@ -121,26 +75,37 @@ export default function HeroUpload({ onAnalyzeFile, onAnalyzePreset, loading, sa
     canvas.height = videoRef.current.videoHeight || 480;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob((blob) => {
-      if (blob) {
-        const file = new File([blob], 'camera_capture.jpg', { type: 'image/jpeg' });
-        stopCamera();
-        onAnalyzeFile(file);
-      }
-    }, 'image/jpeg', 0.95);
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          const file = new File([blob], 'camera_capture.jpg', { type: 'image/jpeg' });
+          stopCamera();
+          onAnalyzeFile(file);
+        }
+      },
+      'image/jpeg',
+      0.95
+    );
+  };
+
+  const handlePresetClick = (id) => {
+    setActivePresetId(id);
+    onAnalyzePreset(id);
   };
 
   return (
     <div className="space-y-6">
-      {/* Upload / Camera Container */}
+      {/* Upload & Camera Input Zone */}
       <div
         onDragEnter={handleDrag}
         onDragOver={handleDrag}
         onDragLeave={handleDrag}
         onDrop={handleDrop}
-        className={`upload-zone rounded-2xl p-8 sm:p-12 text-center cursor-pointer select-none${dragActive ? ' drag-active glow-cyan' : ''}`}
-        onClick={() => !showCamera && !loading && fileInputRef.current?.click()}
-        style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        className={`relative rounded-2xl p-6 sm:p-8 text-center transition-all duration-300 border ${
+          dragActive
+            ? 'border-cyan-400 bg-cyan-950/20 shadow-lg shadow-cyan-500/10'
+            : 'border-white/[0.08] hover:border-white/[0.15] bg-[#0c1019]/80 backdrop-blur-md'
+        }`}
       >
         <input
           ref={fileInputRef}
@@ -148,85 +113,68 @@ export default function HeroUpload({ onAnalyzeFile, onAnalyzePreset, loading, sa
           accept="image/*"
           className="hidden"
           onChange={handleFileChange}
-          onClick={(e) => e.stopPropagation()}
         />
 
         {showCamera ? (
-          <div className="max-w-md mx-auto space-y-4 w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="relative rounded-xl overflow-hidden border border-[#00D4FF]/30 bg-black aspect-video flex items-center justify-center">
+          <div className="max-w-md mx-auto space-y-4">
+            <div className="relative rounded-xl overflow-hidden border border-cyan-500/30 bg-black aspect-video flex items-center justify-center">
               <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-              {/* Scan line overlay */}
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.02) 2px, rgba(0,212,255,0.02) 4px)' }} />
             </div>
-            <div className="flex justify-center gap-3">
+            <div className="flex justify-center space-x-3">
               <button
                 type="button"
                 onClick={capturePhoto}
-                className="px-5 py-2.5 font-semibold rounded-xl flex items-center gap-2 transition-all"
-                style={{ background: 'linear-gradient(135deg, #00D4FF, #0066cc)', color: '#050810' }}
+                className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl flex items-center space-x-2 transition shadow-lg shadow-cyan-500/20"
               >
                 <Camera className="w-4 h-4" />
-                <span>Snap Car Photo</span>
+                <span>Capture Frame</span>
               </button>
               <button
                 type="button"
                 onClick={stopCamera}
-                className="px-4 py-2.5 bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 font-medium rounded-xl border border-white/[0.08] transition"
+                className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium text-xs rounded-xl border border-white/[0.08] transition"
               >
                 Cancel
               </button>
             </div>
           </div>
-        ) : loading ? (
-          <div onClick={(e) => e.stopPropagation()}>
-            <LoadingZone />
-          </div>
         ) : (
-          <div className="max-w-lg mx-auto space-y-5" onClick={(e) => e.stopPropagation()}>
-            {/* Upload icon in glowing square */}
-            <div
-              className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center"
-              style={{
-                background: 'rgba(0,212,255,0.08)',
-                border: '1px solid rgba(0,212,255,0.25)',
-                boxShadow: '0 0 30px rgba(0,212,255,0.12)',
-              }}
-            >
-              <Upload className="w-8 h-8 text-[#00D4FF]" />
+          <div className="max-w-md mx-auto space-y-3">
+            <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500/10 to-indigo-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+              {loading ? (
+                <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+              ) : (
+                <Upload className="w-6 h-6" />
+              )}
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-white">
-                Drop vehicle image here
-              </h2>
-              <p className="text-sm text-slate-400 mt-1">
-                or browse from disk · camera capture supported
+              <h3 className="text-base font-bold text-white tracking-wide">
+                {loading ? 'Processing Visual Telemetry...' : 'Upload Unseen Vehicle Photography'}
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Drag and drop raw car imagery or capture live via camera
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+            <div className="flex items-center justify-center gap-3 pt-1">
               <button
                 type="button"
                 disabled={loading}
-                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                className="px-6 py-2.5 font-semibold text-sm rounded-full flex items-center gap-2 transition-all disabled:opacity-50 shadow-lg"
-                style={{
-                  background: 'linear-gradient(135deg, #00D4FF, #0066cc)',
-                  color: '#050810',
-                  boxShadow: '0 4px 20px rgba(0,212,255,0.25)',
-                }}
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-lg shadow-md shadow-cyan-500/10 flex items-center space-x-2 transition disabled:opacity-50"
               >
-                <ImageIcon className="w-4 h-4" />
-                <span>Choose Image</span>
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Browse File</span>
               </button>
 
               <button
                 type="button"
                 disabled={loading}
-                onClick={(e) => { e.stopPropagation(); startCamera(); }}
-                className="px-5 py-2.5 font-semibold text-sm rounded-full flex items-center gap-2 transition-all disabled:opacity-50 border text-[#00D4FF] border-[#00D4FF]/40 hover:bg-[#00D4FF]/5"
+                onClick={startCamera}
+                className="px-3.5 py-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 font-medium text-xs rounded-lg border border-white/[0.08] flex items-center space-x-1.5 transition disabled:opacity-50"
               >
-                <Camera className="w-4 h-4" />
+                <Camera className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Live Camera</span>
               </button>
             </div>
@@ -234,60 +182,129 @@ export default function HeroUpload({ onAnalyzeFile, onAnalyzePreset, loading, sa
         )}
       </div>
 
-      {/* Preset Samples */}
-      {samples && samples.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#00D4FF]" />
-              <h4 className="text-sm font-bold text-slate-200 tracking-wide">
-                Instant Evaluation Presets
-              </h4>
-            </div>
-            <span className="text-xs text-slate-500 font-mono">{samples.length} presets</span>
+      {/* Evaluation Presets & Test Set Selector Header */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setActiveTab('presets')}
+              className={`text-xs font-bold tracking-wider uppercase transition-colors pb-1 flex items-center space-x-1.5 ${
+                activeTab === 'presets'
+                  ? 'text-cyan-400 border-b-2 border-cyan-400'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Calibrated Presets (5 Scenarios)</span>
+            </button>
+
+            {testSamples.length > 0 && (
+              <button
+                onClick={() => setActiveTab('testset')}
+                className={`text-xs font-bold tracking-wider uppercase transition-colors pb-1 flex items-center space-x-1.5 ${
+                  activeTab === 'testset'
+                    ? 'text-cyan-400 border-b-2 border-cyan-400'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Stanford Cars Test Set ({testSamples.length} Cars)</span>
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {samples.map((sample) => {
-              const style = getCategoryStyle(sample.category);
+          <span className="text-[11px] font-mono text-slate-500 hidden sm:inline">
+            1-Click Live Inference
+          </span>
+        </div>
+
+        {/* Tab 1: The 5 Photographic Scenario Presets */}
+        {activeTab === 'presets' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+            {samples.map((s) => {
+              const isSelected = activePresetId === s.id;
               return (
                 <button
-                  key={sample.id}
+                  key={s.id}
                   disabled={loading}
-                  onClick={() => onAnalyzePreset(sample.id)}
-                  className="text-left rounded-xl transition-all duration-200 group disabled:opacity-50 overflow-hidden flex flex-col"
-                  style={{
-                    background: 'rgba(8,15,30,0.80)',
-                    border: `1px solid rgba(255,255,255,0.06)`,
-                    borderTop: `2px solid ${style.border}`,
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = style.border; e.currentTarget.style.boxShadow = `0 8px 30px rgba(0,0,0,0.5), 0 0 0 1px ${style.border}30`; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderTopColor = style.border; e.currentTarget.style.boxShadow = ''; }}
+                  onClick={() => handlePresetClick(s.id)}
+                  className={`group relative text-left rounded-xl overflow-hidden border transition-all duration-200 bg-[#0d121c] flex flex-col justify-between ${
+                    isSelected
+                      ? 'border-cyan-400/80 ring-1 ring-cyan-400/50 shadow-lg shadow-cyan-950/40'
+                      : 'border-white/[0.08] hover:border-cyan-500/40 hover:bg-[#111724]'
+                  }`}
                 >
-                  <div className="p-3 flex-1 space-y-2">
-                    <span className={`text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded border ${style.badge}`}>
-                      {sample.category}
+                  {/* Real Car Thumbnail Image */}
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-black/60">
+                    <img
+                      src={s.image_url || `/api/samples/${s.filename}`}
+                      alt={s.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0d121c] via-transparent to-black/30" />
+
+                    {/* Category Tag Badge */}
+                    <span className="absolute top-2 left-2 text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-md text-cyan-300 border border-cyan-500/30">
+                      {s.category}
                     </span>
-                    <p className="text-xs font-bold text-slate-200 line-clamp-1 group-hover:text-white transition mt-1">
-                      {sample.title}
-                    </p>
-                    <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">
-                      {sample.description}
-                    </p>
                   </div>
-                  <div
-                    className="flex items-center justify-between px-3 py-2 text-[10px] font-semibold"
-                    style={{ borderTop: '1px solid rgba(255,255,255,0.04)', color: style.border }}
-                  >
-                    <span>Evaluate</span>
-                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+
+                  {/* Card Metadata */}
+                  <div className="p-3 flex-1 flex flex-col justify-between space-y-2">
+                    <div>
+                      <h4 className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors line-clamp-1">
+                        {s.title}
+                      </h4>
+                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">{s.subtitle}</p>
+                      <p className="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                        {s.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-white/[0.05] flex items-center justify-between text-[10px]">
+                      <span className="font-mono text-cyan-400 font-medium">Evaluate</span>
+                      <Play className="w-2.5 h-2.5 text-cyan-400 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
                   </div>
                 </button>
               );
             })}
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Tab 2: Stanford Cars Test Set Gallery */}
+        {activeTab === 'testset' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {testSamples.map((item, idx) => (
+              <button
+                key={idx}
+                disabled={loading}
+                onClick={() => onAnalyzeTestSample(item.filename)}
+                className="group relative text-left rounded-xl overflow-hidden border border-white/[0.08] hover:border-cyan-400/60 bg-[#0d121c] transition-all p-2.5 flex items-center space-x-3"
+              >
+                <div className="w-16 h-12 rounded-lg overflow-hidden bg-black flex-shrink-0 border border-white/[0.08]">
+                  <img
+                    src={item.image_url}
+                    alt={item.ground_truth}
+                    className="w-full h-full object-cover group-hover:scale-105 transition"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="text-[9px] font-mono text-cyan-400 block truncate font-bold">
+                    {item.make} ({item.year})
+                  </span>
+                  <p className="text-xs font-semibold text-white truncate group-hover:text-cyan-300">
+                    {item.model}
+                  </p>
+                  <span className="text-[9px] text-slate-400 block truncate">
+                    {item.body_style}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

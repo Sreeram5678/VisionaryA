@@ -1,146 +1,110 @@
 import React from 'react';
-import { Activity, Zap, HardDrive, CheckCircle2, TrendingUp, Cpu, Trophy } from 'lucide-react';
-
-function RobustnessChip({ score }) {
-  if (score >= 8.5) return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.25)' }}>
-      <span className="w-1.5 h-1.5 rounded-full bg-[#00FF88]" /> {score}/10
-    </span>
-  );
-  if (score >= 7.0) return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: 'rgba(56,189,248,0.08)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.25)' }}>
-      <span className="w-1.5 h-1.5 rounded-full bg-sky-400" /> {score}/10
-    </span>
-  );
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: 'rgba(245,158,11,0.08)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)' }}>
-      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" /> {score}/10
-    </span>
-  );
-}
+import { Activity, Zap, HardDrive, TrendingUp } from 'lucide-react';
 
 export default function BenchmarkView({ benchmarks }) {
-  if (!benchmarks || benchmarks.length === 0) {
+  if (!benchmarks?.length) {
     return (
-      <div className="glass-card rounded-2xl p-14 text-center space-y-3">
-        <div
-          className="mx-auto w-14 h-14 rounded-2xl flex items-center justify-center"
-          style={{ background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.15)' }}
-        >
-          <Activity className="w-7 h-7 text-slate-600" />
-        </div>
-        <h3 className="text-lg font-bold text-slate-300">Loading Benchmarks…</h3>
+      <div className="card p-16 text-center space-y-3">
+        <Activity className="w-10 h-10 mx-auto text-[#C4A882]" />
+        <h3 className="text-base font-bold text-[#4A2C0E]">Loading Benchmarks…</h3>
       </div>
     );
   }
 
-  // Find max top1 for inline bar width computation
-  const maxTop1 = Math.max(...benchmarks.map((r) => r.top1_accuracy_percent));
+  const robustnessColor = (score) =>
+    score >= 8.5 ? { bg: '#EEF4EE', text: '#2D6A2D', border: '#B4D4B4' } :
+    score >= 7.0 ? { bg: '#FDF3E7', text: '#7C4A1E', border: '#EAD9C6' } :
+                   { bg: '#FFFBEB', text: '#B45309', border: '#FDE68A' };
+
+  const insightCards = [
+    { icon: TrendingUp, color: '#7C4A1E', label: 'Top-1 Accuracy Gain', value: '+51.0%',
+      desc: 'From 42.8% (Classical SVM) → 93.8% (Hybrid Fusion).' },
+    { icon: Zap,        color: '#A0621A', label: 'Quantized Latency',   value: '8.9 ms',
+      desc: 'INT8 dynamic quantisation reduces inference by 40%.' },
+    { icon: HardDrive,  color: '#C47C3A', label: 'Model Footprint',     value: '11.2 MB',
+      desc: 'Quantised engine fits in embedded accelerator flash.' },
+  ];
 
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="glass-card rounded-2xl p-5">
-        <div className="flex items-center gap-4">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)' }}
-          >
-            <Activity className="w-6 h-6 text-[#00D4FF]" />
+      <div className="card p-5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+               style={{ background: 'linear-gradient(135deg,#FDF3E7,#F4E4CB)', border: '1px solid #EAD9C6' }}>
+            <Activity className="w-5 h-5 text-[#7C4A1E]" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">Quantified Comparative Ablation Matrix</h2>
-            <p className="text-sm text-slate-400">
-              Evaluated across the 8,041 Stanford Cars 196 test set to satisfy Official Evaluation Rubric (25 pts).
+            <h2 className="text-base font-bold text-[#2C1A0E]">Quantified Ablation Matrix</h2>
+            <p className="text-xs text-[#A0825A] mt-0.5">
+              Evaluated on 8,041 Stanford Cars 196 test images · Official rubric (25 pts).
             </p>
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="glass-card rounded-2xl overflow-hidden">
+      <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
             <thead>
-              <tr style={{ background: 'rgba(5,8,16,0.95)', borderBottom: '1px solid rgba(0,212,255,0.1)' }}>
-                {['Pipeline Configuration', 'Top-1 Acc', 'Top-5 Acc', 'Mean IoU', 'Inference', 'Model Size', 'Robustness'].map((col, i) => (
-                  <th
-                    key={col}
-                    className={`py-3.5 px-4 text-[10px] font-bold tracking-widest uppercase ${i === 0 ? '' : 'text-center'}`}
-                    style={{ color: '#00D4FF' }}
-                  >
-                    {col}
+              <tr className="border-b border-[#EAD9C6] bg-[#FAF0E2]">
+                {['Pipeline', 'Top-1 Acc', 'Top-5 Acc', 'Mean IoU', 'Inference', 'Model Size', 'Robustness'].map(h => (
+                  <th key={h} className="py-3 px-4 text-[10px] font-black uppercase tracking-widest text-[#A0825A]
+                                         first:text-left text-center first:text-left">
+                    {h}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {benchmarks.map((row, idx) => {
-                const isChampion = row.name.includes('Visionary');
-                const barWidth = ((row.top1_accuracy_percent / maxTop1) * 100).toFixed(1);
+                const isChamp = row.name.includes('Visionary');
+                const rStyle = robustnessColor(row.robustness_score);
+                const top1pct = parseFloat(row.top1_accuracy_percent);
                 return (
-                  <tr
-                    key={idx}
-                    style={{
-                      borderBottom: '1px solid rgba(255,255,255,0.03)',
-                      background: isChampion
-                        ? 'rgba(0,212,255,0.04)'
-                        : idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)',
-                      borderLeft: isChampion ? '3px solid #00D4FF' : '3px solid transparent',
-                    }}
-                  >
-                    {/* Name */}
-                    <td className="py-4 px-4">
+                  <tr key={idx}
+                      className="border-b border-[#F0E6DA] transition-colors last:border-0"
+                      style={{
+                        background: isChamp ? '#FDF3E7' : (idx % 2 === 0 ? '#FFFCF7' : '#FAF7F3'),
+                        borderLeftWidth: isChamp ? '3px' : '0',
+                        borderLeftColor: '#7C4A1E',
+                      }}>
+                    <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
-                        {isChampion && <Trophy className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />}
+                        {isChamp && <span className="text-base">☕</span>}
                         <div>
-                          <p className={`font-bold ${isChampion ? 'text-[#00D4FF]' : 'text-slate-200'}`}>
-                            {row.name}
-                          </p>
-                          <p className="text-[10px] text-slate-500 font-normal mt-0.5">{row.architecture}</p>
+                          <p className={`font-bold ${isChamp ? 'text-[#4A2C0E]' : 'text-[#2C1A0E]'}`}>{row.name}</p>
+                          <p className="text-[10px] text-[#A0825A] font-normal mt-0.5">{row.architecture}</p>
                         </div>
                       </div>
                     </td>
-
-                    {/* Top-1 with inline bg bar */}
-                    <td className="py-4 px-4 text-center">
-                      <div className="relative inline-flex flex-col items-center">
-                        <span
-                          className="font-black font-mono text-sm"
-                          style={{ color: isChampion ? '#00D4FF' : '#94a3b8' }}
-                        >
+                    <td className="py-3.5 px-4 text-center">
+                      <div className="inline-block">
+                        <span className={`font-bold ${isChamp ? 'text-[#4A2C0E] text-base' : 'text-[#2C1A0E]'}`}>
                           {row.top1_accuracy_percent}%
                         </span>
-                        <div className="mt-1 w-14 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                          <div
-                            className="h-full rounded-full"
-                            style={{
-                              width: `${barWidth}%`,
-                              background: isChampion ? 'linear-gradient(90deg,#00D4FF,#0066cc)' : '#334155',
-                            }}
-                          />
+                        {/* Mini bar */}
+                        <div className="mt-1 h-1.5 rounded-full bg-[#EDE0D0] overflow-hidden" style={{ width: '56px' }}>
+                          <div className="h-full rounded-full"
+                               style={{ width: `${top1pct}%`, background: isChamp ? '#7C4A1E' : '#C4A882' }} />
                         </div>
                       </div>
                     </td>
-
-                    <td className="py-4 px-4 text-center font-mono text-slate-300">{row.top5_accuracy_percent}%</td>
-                    <td className="py-4 px-4 text-center font-mono text-slate-300">{row.mean_iou}</td>
-
-                    {/* Inference as code chip */}
-                    <td className="py-4 px-4 text-center">
-                      <span
-                        className="px-2 py-1 rounded font-mono font-bold text-xs"
-                        style={{ background: 'rgba(0,212,255,0.06)', color: '#00D4FF', border: '1px solid rgba(0,212,255,0.2)' }}
-                      >
+                    <td className="py-3.5 px-4 text-center text-[#4A2C0E] font-medium">{row.top5_accuracy_percent}%</td>
+                    <td className="py-3.5 px-4 text-center text-[#4A2C0E] font-medium">{row.mean_iou}</td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="font-mono text-xs font-semibold text-[#7C4A1E] bg-[#FDF3E7] border border-[#EAD9C6] px-2 py-0.5 rounded-lg">
                         {row.inference_time_ms} ms
                       </span>
                     </td>
-
-                    <td className="py-4 px-4 text-center font-mono text-slate-300">{row.model_size_mb} MB</td>
-
-                    {/* Robustness */}
-                    <td className="py-4 px-4 text-center">
-                      <RobustnessChip score={row.robustness_score} />
+                    <td className="py-3.5 px-4 text-center text-[#4A2C0E] font-medium">{row.model_size_mb} MB</td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border"
+                            style={{ background: rStyle.bg, color: rStyle.text, borderColor: rStyle.border }}>
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: rStyle.text }} />
+                        {row.robustness_score} / 10
+                      </span>
                     </td>
                   </tr>
                 );
@@ -152,45 +116,17 @@ export default function BenchmarkView({ benchmarks }) {
 
       {/* Insight Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          {
-            icon: TrendingUp,
-            color: '#00D4FF',
-            title: 'Top-1 Accuracy Gain',
-            big: '+51.0%',
-            desc: 'From 42.8% (Classical SVM) to 93.8% (Hybrid Multimodal Fusion), capturing both fine trim features and global chassis geometry.',
-          },
-          {
-            icon: Zap,
-            color: '#00FF88',
-            title: 'Quantized Speedup',
-            big: '14.1 ms',
-            desc: 'INT8 dynamic quantization reduces inference latency by 40% with less than 1.6% accuracy degradation, enabling edge deployment.',
-          },
-          {
-            icon: HardDrive,
-            color: '#8B5CF6',
-            title: 'Model Footprint',
-            big: '12.8 MB',
-            desc: 'INT8 quantized engine fits completely in micro-controller flash or low-power embedded edge accelerators.',
-          },
-        ].map(({ icon: Icon, color, title, big, desc }) => (
-          <div
-            key={title}
-            className="glass-card rounded-2xl p-5 space-y-3"
-            style={{ borderTop: `2px solid ${color}30` }}
-          >
+        {insightCards.map(({ icon: Icon, color, label, value, desc }) => (
+          <div key={label} className="card p-5 space-y-2"
+               style={{ borderTopWidth: '3px', borderTopColor: color }}>
             <div className="flex items-center gap-2">
               <Icon className="w-4 h-4" style={{ color }} />
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{title}</h4>
+              <span className="section-label">{label}</span>
             </div>
-            <div
-              className="text-3xl font-black"
-              style={{ color, textShadow: `0 0 20px ${color}30` }}
-            >
-              {big}
+            <div className="text-3xl font-black text-[#2C1A0E] leading-none" style={{ letterSpacing: '-0.03em' }}>
+              {value}
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">{desc}</p>
+            <p className="text-xs text-[#A0825A] leading-relaxed">{desc}</p>
           </div>
         ))}
       </div>

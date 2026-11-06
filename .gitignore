@@ -38,6 +38,7 @@ venv.bak/
 
 # Data and large model checkpoints (download via scripts)
 data/
+!data/test_samples/
 datasets/
 *.tar.gz
 *.tgz

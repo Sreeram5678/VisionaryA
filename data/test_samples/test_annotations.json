@@ -1,0 +1,123 @@
+[
+  {
+    "filename": "test_01_am_general_hummer_suv_2000.jpg",
+    "path": "data/test_samples/test_01_am_general_hummer_suv_2000.jpg",
+    "class_id": 0,
+    "ground_truth": "AM General Hummer SUV 2000",
+    "make": "AM General",
+    "model": "Hummer SUV",
+    "year": 2000,
+    "body_style": "SUV",
+    "size_bytes": 2690
+  },
+  {
+    "filename": "test_02_aston_martin_virage_coupe_2012.jpg",
+    "path": "data/test_samples/test_02_aston_martin_virage_coupe_2012.jpg",
+    "class_id": 10,
+    "ground_truth": "Aston Martin Virage Coupe 2012",
+    "make": "Aston Martin",
+    "model": "Virage Coupe",
+    "year": 2012,
+    "body_style": "Coupe",
+    "size_bytes": 77946
+  },
+  {
+    "filename": "test_03_ferrari_california_convertible_2012.jpg",
+    "path": "data/test_samples/test_03_ferrari_california_convertible_2012.jpg",
+    "class_id": 101,
+    "ground_truth": "Ferrari California Convertible 2012",
+    "make": "Ferrari",
+    "model": "California Convertible",
+    "year": 2012,
+    "body_style": "Convertible",
+    "size_bytes": 26176
+  },
+  {
+    "filename": "test_05_ford_mustang_convertible_2007.jpg",
+    "path": "data/test_samples/test_05_ford_mustang_convertible_2007.jpg",
+    "class_id": 106,
+    "ground_truth": "Ford Mustang Convertible 2007",
+    "make": "Ford",
+    "model": "Mustang Convertible",
+    "year": 2007,
+    "body_style": "Convertible",
+    "size_bytes": 76812
+  },
+  {
+    "filename": "test_06_ford_ranger_supercab_2011.jpg",
+    "path": "data/test_samples/test_06_ford_ranger_supercab_2011.jpg",
+    "class_id": 110,
+    "ground_truth": "Ford Ranger SuperCab 2011",
+    "make": "Ford",
+    "model": "Ranger SuperCab",
+    "year": 2011,
+    "body_style": "SuperCab",
+    "size_bytes": 33122
+  },
+  {
+    "filename": "test_07_gmc_terrain_suv_2012.jpg",
+    "path": "data/test_samples/test_07_gmc_terrain_suv_2012.jpg",
+    "class_id": 117,
+    "ground_truth": "GMC Terrain SUV 2012",
+    "make": "GMC",
+    "model": "Terrain SUV",
+    "year": 2012,
+    "body_style": "SUV",
+    "size_bytes": 26864
+  },
+  {
+    "filename": "test_08_honda_accord_sedan_2012.jpg",
+    "path": "data/test_samples/test_08_honda_accord_sedan_2012.jpg",
+    "class_id": 128,
+    "ground_truth": "Honda Accord Sedan 2012",
+    "make": "Honda",
+    "model": "Accord Sedan",
+    "year": 2012,
+    "body_style": "Sedan",
+    "size_bytes": 10715
+  },
+  {
+    "filename": "test_09_jaguar_xk_xkr_2012.jpg",
+    "path": "data/test_samples/test_09_jaguar_xk_xkr_2012.jpg",
+    "class_id": 143,
+    "ground_truth": "Jaguar XK XKR 2012",
+    "make": "Jaguar",
+    "model": "XK XKR",
+    "year": 2012,
+    "body_style": "Unknown",
+    "size_bytes": 50964
+  },
+  {
+    "filename": "test_10_nissan_nv_passenger_van_2012.jpg",
+    "path": "data/test_samples/test_10_nissan_nv_passenger_van_2012.jpg",
+    "class_id": 168,
+    "ground_truth": "Nissan NV Passenger Van 2012",
+    "make": "Nissan",
+    "model": "NV Passenger Van",
+    "year": 2012,
+    "body_style": "Van",
+    "size_bytes": 66197
+  },
+  {
+    "filename": "test_11_acura_tl_sedan_2012.jpg",
+    "path": "data/test_samples/test_11_acura_tl_sedan_2012.jpg",
+    "class_id": 2,
+    "ground_truth": "Acura TL Sedan 2012",
+    "make": "Acura",
+    "model": "TL Sedan",
+    "year": 2012,
+    "body_style": "Sedan",
+    "size_bytes": 24705
+  },
+  {
+    "filename": "test_12_chevrolet_corvette_convertible_2012.jpg",
+    "path": "data/test_samples/test_12_chevrolet_corvette_convertible_2012.jpg",
+    "class_id": 54,
+    "ground_truth": "Chevrolet Corvette Convertible 2012",
+    "make": "Chevrolet",
+    "model": "Corvette Convertible",
+    "year": 2012,
+    "body_style": "Convertible",
+    "size_bytes": 30200
+  }
+]

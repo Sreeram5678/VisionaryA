@@ -1,152 +1,115 @@
 import React from 'react';
-import { ShieldCheck, AlertTriangle, CheckCircle2, Clock, Cpu, BarChart2, Maximize2, Trophy } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, Clock, Cpu, BarChart2, Maximize2 } from 'lucide-react';
 
-function ConfidenceColor(status) {
-  if (status === 'CONFIDENT') return { text: '#00FF88', bg: 'rgba(0,255,136,0.08)', border: 'rgba(0,255,136,0.3)' };
-  if (status === 'AMBIGUOUS') return { text: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.3)' };
-  return { text: '#f43f5e', bg: 'rgba(244,63,94,0.08)', border: 'rgba(244,63,94,0.3)' };
-}
-
-const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32', '#94a3b8', '#64748b'];
+const RANK_STYLES = [
+  { bg: '#7C4A1E', text: '#FDF6EE' },
+  { bg: '#A07050', text: '#FDF6EE' },
+  { bg: '#C4A882', text: '#2C1A0E' },
+  { bg: '#E5D5C0', text: '#6B4A2A' },
+  { bg: '#EDE0D0', text: '#8B6040' },
+];
 
 export default function ResultsView({ result }) {
   if (!result) return null;
 
-  const {
-    vehicle_detected,
-    primary_box,
-    top1,
-    top5,
-    confidence_assessment,
-    latency,
-    visualizations,
-    fused_embedding_dim,
-  } = result;
+  const { vehicle_detected, primary_box, top1, top5, confidence_assessment, latency, visualizations, fused_embedding_dim } = result;
 
-  const confStyle = ConfidenceColor(confidence_assessment.status);
-  const topPct = ((top1?.probability ?? 0) * 100).toFixed(1);
+  const confStatus = confidence_assessment?.status;
+  const confPct = ((top1?.probability ?? 0) * 100).toFixed(1);
+
+  const confStyle =
+    confStatus === 'CONFIDENT'  ? { color: '#2D6A2D', bg: '#EEF4EE', border: '#B4D4B4' } :
+    confStatus === 'AMBIGUOUS'  ? { color: '#92600A', bg: '#FFFBEB', border: '#F5D68A' } :
+                                  { color: '#9B3A3A', bg: '#FFF1F0', border: '#FFC4C4' };
+
+  const latencyItems = [
+    { label: 'YOLOv8 Det',   value: latency?.detection_ms ?? 0,      color: '#7C4A1E' },
+    { label: 'Classical CV', value: latency?.classical_cv_ms ?? 0,    color: '#A0621A' },
+    { label: 'Classifier',   value: latency?.classification_ms ?? 0,  color: '#C47C3A' },
+    { label: 'Total',        value: latency?.total_latency_ms ?? 0,   color: '#2D6A2D', bold: true },
+  ];
 
   return (
     <div className="space-y-5">
-      {/* Alert Banners */}
+      {/* Alerts */}
       {!vehicle_detected && (
-        <div
-          className="flex items-start gap-4 p-4 rounded-xl text-sm"
-          style={{ background: 'rgba(245,158,11,0.06)', borderLeft: '4px solid #f59e0b', border: '1px solid rgba(245,158,11,0.2)', borderLeftWidth: '4px' }}
-        >
-          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-          <div className="text-amber-200">
-            <span className="font-bold text-amber-300">Zero Vehicle Bounding Box Detected: </span>
-            YOLO detector did not find a vehicle with sufficient confidence. The classifier evaluated full-frame features.
-          </div>
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-[#FFFBEB] border border-[#F5D68A]"
+             style={{ borderLeftWidth: '4px', borderLeftColor: '#D97706' }}>
+          <AlertTriangle className="w-4 h-4 text-[#D97706] flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-[#92600A]">
+            <span className="font-bold">No vehicle detected — </span>
+            YOLO found no bounding box; classifier ran on the full frame.
+          </p>
+        </div>
+      )}
+      {confidence_assessment?.is_low_confidence && vehicle_detected && (
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-[#FFF1F0] border border-[#FFC4C4]"
+             style={{ borderLeftWidth: '4px', borderLeftColor: '#E11D48' }}>
+          <AlertTriangle className="w-4 h-4 text-[#E11D48] flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-[#9B3A3A]">
+            <span className="font-bold">Low confidence (&lt;50%) — </span>
+            Possible occlusion, heavy shadow, or out-of-distribution trim.
+          </p>
         </div>
       )}
 
-      {confidence_assessment.is_low_confidence && vehicle_detected && (
-        <div
-          className="flex items-start gap-4 p-4 rounded-xl text-sm"
-          style={{ background: 'rgba(244,63,94,0.06)', borderLeft: '4px solid #f43f5e', border: '1px solid rgba(244,63,94,0.2)', borderLeftWidth: '4px' }}
-        >
-          <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
-          <div className="text-rose-200">
-            <span className="font-bold text-rose-300">Low Confidence Warning (&lt; 50% threshold): </span>
-            Top prediction confidence is below calibrated reliability threshold. Vehicle may suffer from severe occlusion, heavy shadow, or unrepresented trim.
-          </div>
-        </div>
-      )}
-
-      {/* Main 2-Column Grid */}
+      {/* Main 2-col layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
         {/* LEFT — Detection + Latency */}
         <div className="lg:col-span-6 space-y-4">
-          {/* Detection Image Panel */}
-          <div className="glass-card rounded-2xl p-4 space-y-3">
+
+          {/* Detection Image */}
+          <div className="card p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Maximize2 className="w-4 h-4 text-[#00D4FF]" />
-                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-widest">
-                  YOLOv8 Detection & ROI
-                </h3>
+                <Maximize2 className="w-4 h-4 text-[#C47C3A]" />
+                <h3 className="text-sm font-bold text-[#2C1A0E]">YOLOv8 Detection · ROI</h3>
               </div>
               {primary_box && (
-                <span
-                  className="text-xs font-mono font-bold px-2 py-0.5 rounded"
-                  style={{ color: '#00D4FF', background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.25)' }}
-                >
-                  Conf: {(primary_box.confidence * 100).toFixed(1)}%
+                <span className="font-mono text-[11px] text-[#7C4A1E] bg-[#FDF3E7] border border-[#EAD9C6] px-2 py-0.5 rounded-lg">
+                  Conf {(primary_box.confidence * 100).toFixed(1)}%
                 </span>
               )}
             </div>
 
-            {/* Image */}
-            <div
-              className="relative rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center"
-              style={{ border: vehicle_detected ? '1px solid rgba(0,212,255,0.2)' : '1px solid rgba(255,255,255,0.06)', boxShadow: vehicle_detected ? '0 0 20px rgba(0,212,255,0.08) inset' : 'none' }}
-            >
-              {visualizations?.detection ? (
-                <img
-                  src={visualizations.detection}
-                  alt="Vehicle Localization"
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="text-slate-600 text-sm">No localization image available</div>
-              )}
+            <div className="relative rounded-xl overflow-hidden bg-[#2C1A0E] aspect-video flex items-center justify-center border border-[#EAD9C6]">
+              {visualizations?.detection
+                ? <img src={visualizations.detection} alt="Vehicle localisation" className="w-full h-full object-contain" />
+                : <span className="text-sm text-[#A0825A]">No localisation image</span>
+              }
             </div>
 
-            {/* BBox Coordinates */}
             {primary_box && (
               <div className="grid grid-cols-4 gap-2">
                 {[
-                  { label: 'X1', value: primary_box.x1, color: '#00D4FF' },
-                  { label: 'Y1', value: primary_box.y1, color: '#38bdf8' },
-                  { label: 'X2', value: primary_box.x2, color: '#818cf8' },
-                  { label: 'Y2', value: primary_box.y2, color: '#a78bfa' },
+                  { label: 'X1', value: primary_box.x1, color: '#7C4A1E' },
+                  { label: 'Y1', value: primary_box.y1, color: '#A0621A' },
+                  { label: 'X2', value: primary_box.x2, color: '#C47C3A' },
+                  { label: 'Y2', value: primary_box.y2, color: '#8B6914' },
                 ].map(({ label, value, color }) => (
-                  <div
-                    key={label}
-                    className="text-center rounded-lg py-2"
-                    style={{ background: 'rgba(5,8,16,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}
-                  >
-                    <span className="block text-[9px] font-mono font-bold tracking-widest" style={{ color }}>
-                      {label}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-slate-200 mt-0.5">{value}px</span>
+                  <div key={label} className="text-center py-2 px-1 rounded-xl bg-[#FAF0E2] border border-[#EAD9C6]">
+                    <span className="block text-[9px] font-bold uppercase tracking-widest" style={{ color }}>{label}</span>
+                    <span className="font-mono text-xs font-semibold text-[#2C1A0E] mt-0.5 block">{value}px</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Latency Strip */}
-          <div className="glass-card rounded-2xl p-4 space-y-3">
+          {/* Latency */}
+          <div className="card p-4 space-y-3">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#00D4FF]" />
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-widest">
-                End-to-End Latency
-              </h4>
+              <Clock className="w-4 h-4 text-[#C47C3A]" />
+              <h4 className="text-sm font-bold text-[#2C1A0E]">Latency Breakdown</h4>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { label: 'YOLOv8 Det', value: latency?.detection_ms ?? 0, color: '#00D4FF', thick: false },
-                { label: 'Classical CV', value: latency?.classical_cv_ms ?? 0, color: '#38bdf8', thick: false },
-                { label: 'ResNet50 196', value: latency?.classification_ms ?? 0, color: '#818cf8', thick: false },
-                { label: 'Total Pipeline', value: latency?.total_latency_ms ?? 0, color: '#00FF88', thick: true },
-              ].map(({ label, value, color, thick }) => (
-                <div
-                  key={label}
-                  className="text-center rounded-xl py-3"
-                  style={{
-                    background: 'rgba(5,8,16,0.8)',
-                    border: thick ? `2px solid ${color}30` : '1px solid rgba(255,255,255,0.06)',
-                    boxShadow: thick ? `0 0 15px ${color}10` : 'none',
-                  }}
-                >
-                  <span className="block text-[9px] font-mono tracking-wider" style={{ color: thick ? color : '#64748b' }}>
-                    {label}
-                  </span>
-                  <span className="text-sm font-black font-mono mt-1" style={{ color }}>{value} ms</span>
+            <div className="grid grid-cols-4 gap-2">
+              {latencyItems.map(({ label, value, color, bold }) => (
+                <div key={label}
+                     className="text-center py-2.5 rounded-xl bg-[#FAF0E2] border"
+                     style={{ borderColor: bold ? color + '55' : '#EAD9C6', borderWidth: bold ? '1.5px' : '1px' }}>
+                  <span className="block text-[9px] text-[#A0825A] font-semibold uppercase tracking-wide">{label}</span>
+                  <span className="font-mono text-sm font-bold mt-0.5 block" style={{ color }}>{value} ms</span>
                 </div>
               ))}
             </div>
@@ -155,130 +118,80 @@ export default function ResultsView({ result }) {
 
         {/* RIGHT — Predictions */}
         <div className="lg:col-span-6 space-y-4">
-          {/* TOP-1 HERO CARD */}
-          <div
-            className="rounded-2xl p-6 space-y-4 relative overflow-hidden"
-            style={{
-              background: 'rgba(8,15,30,0.90)',
-              border: '1px solid rgba(0,212,255,0.18)',
-              boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-            }}
-          >
-            {/* Radial glow */}
-            <div
-              className="absolute top-0 right-0 w-56 h-56 pointer-events-none"
-              style={{ background: 'radial-gradient(circle at top right, rgba(0,212,255,0.08), transparent 70%)' }}
-            />
 
-            {/* Trophy label */}
-            <div className="flex items-center gap-1.5">
-              <Trophy className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[10px] font-bold tracking-widest uppercase text-amber-400">Top Match</span>
-            </div>
+          {/* Top-1 Hero */}
+          <div className="card p-6 space-y-4 relative overflow-hidden">
+            {/* warm radial glow */}
+            <div className="absolute top-0 right-0 w-40 h-40 rounded-full pointer-events-none opacity-40"
+                 style={{ background: 'radial-gradient(circle, #C47C3A22 0%, transparent 70%)', transform: 'translate(30%, -30%)' }} />
 
-            {/* Car name — HUGE */}
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight tracking-tight">
-                {top1?.make} {top1?.model}
-              </h2>
-              <span
-                className="inline-block mt-2 px-3 py-1 text-xs font-bold rounded-full"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#cbd5e1' }}
-              >
-                Model Year: {top1?.year || 'Unknown'}
-              </span>
-            </div>
-
-            {/* Confidence — MASSIVE */}
-            <div className="flex items-end gap-4">
-              <div>
-                <div
-                  className="text-5xl font-black leading-none"
-                  style={{ color: confStyle.text, textShadow: `0 0 30px ${confStyle.text}40` }}
-                >
-                  {topPct}%
+            <div className="flex items-start justify-between relative">
+              <div className="flex-1 min-w-0 pr-4">
+                <span className="section-label">Top-1 Match</span>
+                <h2 className="text-2xl font-black text-[#2C1A0E] mt-1 leading-tight font-display">
+                  {top1?.make} {top1?.model}
+                </h2>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs text-[#A0825A] font-medium">Model Year</span>
+                  <span className="badge badge-caramel">{top1?.year || '—'}</span>
                 </div>
-                <span
-                  className="inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-widest uppercase"
-                  style={{ color: confStyle.text, background: confStyle.bg, border: `1px solid ${confStyle.border}` }}
-                >
-                  <ShieldCheck className="w-3 h-3" />
-                  {confidence_assessment.status}
-                </span>
+              </div>
+
+              {/* Confidence */}
+              <div className="text-right flex-shrink-0">
+                <div className="text-4xl font-black leading-none" style={{ color: confStyle.color }}>
+                  {confPct}%
+                </div>
+                <div className="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-semibold"
+                     style={{ background: confStyle.bg, borderColor: confStyle.border, color: confStyle.color }}>
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  {confStatus}
+                </div>
               </div>
             </div>
 
-            {/* Footer */}
-            <div
-              className="flex items-center justify-between pt-3 text-xs"
-              style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <span className="flex items-center gap-1.5 text-slate-500">
-                <Cpu className="w-3.5 h-3.5 text-[#00D4FF]" />
-                <span className="font-mono">{fused_embedding_dim ?? 1312}-dim Fused Vector</span>
-              </span>
-              <span className="text-[10px] text-slate-600 font-mono">Stanford Cars 196</span>
+            <div className="pt-3 border-t border-[#EAD9C6] flex items-center justify-between text-xs text-[#A0825A]">
+              <div className="flex items-center gap-1.5">
+                <Cpu className="w-3.5 h-3.5 text-[#C47C3A]" />
+                <span>Fused Embedding</span>
+              </div>
+              <span className="font-mono font-semibold text-[#7C4A1E]">{fused_embedding_dim ?? 1312}-dim</span>
             </div>
           </div>
 
-          {/* TOP-5 RANKING */}
-          <div className="glass-card rounded-2xl p-5 space-y-4">
+          {/* Top-5 Rankings */}
+          <div className="card p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BarChart2 className="w-4 h-4 text-[#00D4FF]" />
-                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-widest">
-                  Top-5 Candidate Distribution
-                </h3>
+                <BarChart2 className="w-4 h-4 text-[#C47C3A]" />
+                <h3 className="text-sm font-bold text-[#2C1A0E]">Top-5 Candidates</h3>
               </div>
-              <span className="text-[10px] text-slate-600 font-mono">196 classes</span>
+              <span className="section-label">Stanford Cars 196</span>
             </div>
 
             <div className="space-y-3">
               {top5?.map((pred, idx) => {
                 const pct = (pred.probability * 100).toFixed(1);
+                const rank = RANK_STYLES[idx] || RANK_STYLES[4];
                 const isWinner = idx === 0;
-                const rankColor = RANK_COLORS[idx] || '#64748b';
                 return (
                   <div key={idx} className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2 truncate pr-2">
-                        {/* Rank badge */}
-                        <span
-                          className="w-5 h-5 rounded-full flex items-center justify-center font-black text-[9px] flex-shrink-0"
-                          style={{
-                            background: isWinner ? '#FFD70020' : 'rgba(255,255,255,0.05)',
-                            border: `1px solid ${rankColor}50`,
-                            color: rankColor,
-                          }}
-                        >
+                        <span className="w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0"
+                              style={{ background: rank.bg, color: rank.text }}>
                           {idx + 1}
                         </span>
-                        <span className={`truncate font-semibold ${isWinner ? 'text-white' : 'text-slate-400'}`}>
+                        <span className={`truncate ${isWinner ? 'font-bold text-[#2C1A0E]' : 'font-medium text-[#6B4A2A]'}`}>
                           {pred.class_name}
                         </span>
                       </div>
-                      <span
-                        className="font-mono font-black flex-shrink-0"
-                        style={{ color: isWinner ? '#00D4FF' : '#64748b' }}
-                      >
-                        {pct}%
-                      </span>
+                      <span className="font-mono font-bold text-[#2C1A0E] flex-shrink-0">{pct}%</span>
                     </div>
-
-                    {/* Bar */}
-                    <div
-                      className="w-full h-2.5 rounded-full overflow-hidden"
-                      style={{ background: 'rgba(255,255,255,0.04)' }}
-                    >
+                    <div className="prob-bar-track">
                       <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${Math.max(pred.probability * 100, 2)}%`,
-                          background: isWinner
-                            ? 'linear-gradient(90deg, #00D4FF, #0066cc)'
-                            : 'linear-gradient(90deg, #1e293b, #334155)',
-                          boxShadow: isWinner ? '0 0 10px rgba(0,212,255,0.4)' : 'none',
-                        }}
+                        className={`prob-bar-fill ${isWinner ? 'prob-bar-winner' : 'prob-bar-other'}`}
+                        style={{ width: `${Math.max(pred.probability * 100, 2)}%` }}
                       />
                     </div>
                   </div>

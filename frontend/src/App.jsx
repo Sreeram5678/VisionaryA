@@ -4,38 +4,24 @@ import HeroUpload from './components/HeroUpload';
 import ResultsView from './components/ResultsView';
 import CVInspector from './components/CVInspector';
 import BenchmarkView from './components/BenchmarkView';
-import FailureCases from './components/FailureCases';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('recognition');
-  const [health, setHealth] = useState(null);
   const [samples, setSamples] = useState([]);
   const [benchmarks, setBenchmarks] = useState([]);
-  const [failureCases, setFailureCases] = useState([]);
   const [currentResult, setCurrentResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Fetch initial data on mount
   useEffect(() => {
-    fetchHealth();
     fetchSamples();
     fetchBenchmarks();
-    fetchFailureCases();
 
     // Auto-run initial evaluation with the real Audi R8 sample
     handleAnalyzePreset('real_audi_r8');
   }, []);
-
-  const fetchHealth = async () => {
-    try {
-      const res = await fetch('/api/health');
-      if (res.ok) setHealth(await res.json());
-    } catch (e) {
-      console.warn("Could not fetch health:", e);
-    }
-  };
 
   const fetchSamples = async () => {
     try {
@@ -45,7 +31,7 @@ export default function App() {
         setSamples(data.samples || []);
       }
     } catch (e) {
-      console.warn("Could not fetch samples:", e);
+      console.warn('Could not fetch samples:', e);
     }
   };
 
@@ -57,19 +43,7 @@ export default function App() {
         setBenchmarks(data.benchmarks || []);
       }
     } catch (e) {
-      console.warn("Could not fetch benchmarks:", e);
-    }
-  };
-
-  const fetchFailureCases = async () => {
-    try {
-      const res = await fetch('/api/failure-cases');
-      if (res.ok) {
-        const data = await res.json();
-        setFailureCases(data.failure_cases || []);
-      }
-    } catch (e) {
-      console.warn("Could not fetch failure cases:", e);
+      console.warn('Could not fetch benchmarks:', e);
     }
   };
 
@@ -119,18 +93,41 @@ export default function App() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-[#080c14] text-slate-100">
-      {/* Sticky Glassmorphic Header */}
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} health={health} />
+  const handleAnalyzeTestSample = async (filename) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append('test_sample_filename', filename);
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || 'Analysis failed');
+      }
+      const data = await res.json();
+      setCurrentResult(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      {/* Main Body */}
+  return (
+    <div className="min-h-screen flex flex-col bg-[#070a12] text-slate-100 antialiased selection:bg-cyan-500 selection:text-black">
+      {/* Sleek Minimalist Header without clutter */}
+      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+
+      {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Error Alert */}
         {error && (
-          <div className="p-4 rounded-xl bg-rose-950/50 border border-rose-500/50 flex items-center space-x-3 text-rose-200">
+          <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-500/40 flex items-center space-x-3 text-rose-200 text-sm">
             <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />
-            <div className="text-sm">
+            <div>
               <span className="font-bold">Error:</span> {error}
             </div>
           </div>
@@ -142,15 +139,16 @@ export default function App() {
             <HeroUpload
               onAnalyzeFile={handleAnalyzeFile}
               onAnalyzePreset={handleAnalyzePreset}
+              onAnalyzeTestSample={handleAnalyzeTestSample}
               loading={loading}
               samples={samples}
             />
 
             {loading && !currentResult && (
-              <div className="glass-card rounded-2xl p-12 text-center text-slate-400 space-y-3">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto text-cyan-400" />
-                <p className="text-sm font-semibold text-slate-200">
-                  Executing YOLOv8 Localization & Classical CLAHE Normalization...
+              <div className="rounded-2xl p-12 text-center text-slate-400 space-y-3 bg-[#0d121c] border border-white/[0.08]">
+                <Loader2 className="w-7 h-7 animate-spin mx-auto text-cyan-400" />
+                <p className="text-xs font-mono uppercase tracking-wider text-slate-300">
+                  Localizing Vehicle ROI & Normalizing Lighting...
                 </p>
               </div>
             )}
@@ -168,16 +166,11 @@ export default function App() {
         {activeTab === 'benchmarks' && (
           <BenchmarkView benchmarks={benchmarks} />
         )}
-
-        {/* Tab 4: Failure Cases & Viva Preparation */}
-        {activeTab === 'failures' && (
-          <FailureCases failureCases={failureCases} />
-        )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/60 py-4 text-center text-xs text-slate-400">
-        <p>Visionary — Problem Statement P5 · Team T20</p>
+      {/* Modern Minimalist Clean Footer */}
+      <footer className="border-t border-white/[0.05] bg-[#05070c] py-4 text-center text-xs text-slate-500 font-mono">
+        <p>Visionary · Autonomous Fine-Grained Vehicle Telemetry</p>
       </footer>
     </div>
   );

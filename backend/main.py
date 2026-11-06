@@ -91,41 +91,53 @@ def ndarray_to_base64_jpeg(arr: np.ndarray, quality: int = 85) -> str:
 
 
 SAMPLES_DIR = REPO_ROOT / "app" / "samples"
+TEST_SAMPLES_DIR = REPO_ROOT / "data" / "test_samples"
+
 SAMPLE_PRESETS = [
     {
         "id": "real_audi_r8",
         "filename": "real_audi_r8.jpg",
-        "title": "Audi R8 Coupe",
+        "title": "Audi R8 V10 Coupe",
+        "subtitle": "2012 Model Year",
         "category": "Supercar",
-        "description": "High-resolution real photo of Audi R8 V10 with reflections and studio lighting.",
+        "badge": "Audi R8 2012",
+        "description": "High-reflection studio lighting testing fine-grained coupe classification.",
     },
     {
         "id": "real_bmw_coupe",
         "filename": "real_bmw_coupe.jpg",
         "title": "BMW M3 Coupe",
-        "category": "Sports Coupe",
-        "description": "Real photograph of high-performance BMW M3 coupe on open road.",
+        "subtitle": "2012 Model Year",
+        "category": "Performance",
+        "badge": "BMW M3 2012",
+        "description": "Open asphalt road testing aerodynamic kidney grille and body contours.",
     },
     {
         "id": "real_land_rover_suv",
         "filename": "real_land_rover_suv.jpg",
-        "title": "Off-Road 4x4 SUV",
-        "category": "Luxury SUV",
-        "description": "Real outdoor photo of rugged 4x4 SUV exploring rough mountain terrain.",
+        "title": "Land Rover Defender",
+        "subtitle": "Rugged 4x4 Utility",
+        "category": "All-Terrain SUV",
+        "badge": "High Clearance",
+        "description": "Outdoor terrain testing boxy body geometry and high ground clearance.",
     },
     {
         "id": "real_night_drive",
         "filename": "real_night_drive.jpg",
-        "title": "Night Driving Shot",
+        "title": "Night Highway Drive",
+        "subtitle": "Low-Light Adverse Conditions",
         "category": "Adverse Lighting",
-        "description": "Real nighttime vehicle photo with headlights and street glare testing CLAHE.",
+        "badge": "CLAHE Stress Test",
+        "description": "Streetlight specular flare and harsh shadows testing CIE LAB normalization.",
     },
     {
         "id": "real_scenic_landscape",
         "filename": "real_scenic_landscape.jpg",
-        "title": "Mountain Valley (No Car)",
-        "category": "Negative Test",
-        "description": "Real scenic landscape with zero vehicles to verify robust rejection without crashing.",
+        "title": "Mountain Valley Road",
+        "subtitle": "Zero-Vehicle Negative Baseline",
+        "category": "Negative Control",
+        "badge": "Zero False-Positive",
+        "description": "Scenic landscape with zero cars to verify automated fallback and anomaly alerting.",
     },
 ]
 
@@ -139,16 +151,16 @@ def health_check():
         "project": "Visionary",
         "team_id": "T20",
         "problem_statement": "P5",
-        "weights_loaded": has_weights,
+        "model_ready": has_weights,
         "detector": "YOLOv8-nano",
-        "classifier_backbone": "ResNet50 / ConvNeXt-Tiny (Stanford Cars 196)",
+        "classifier": "ResNet50 Fine-Grained 196",
         "multimodal_dim": 1312,
     }
 
 
 @app.get("/api/samples")
 def list_samples():
-    """Returns sample presets for quick one-click demo testing."""
+    """Returns sample presets for quick evaluation with full image URLs."""
     samples = []
     for s in SAMPLE_PRESETS:
         file_path = SAMPLES_DIR / s["filename"]
@@ -156,9 +168,31 @@ def list_samples():
         samples.append({
             **s,
             "available": exists,
-            "url": f"/api/samples/{s['filename']}" if exists else None,
+            "image_url": f"/api/samples/{s['filename']}" if exists else None,
         })
     return {"samples": samples}
+
+
+@app.get("/api/test-samples")
+def list_test_samples():
+    """Returns official Stanford Cars test set samples with ground truth annotations."""
+    annot_file = TEST_SAMPLES_DIR / "test_annotations.json"
+    if not annot_file.is_file():
+        return {"test_samples": []}
+    import json
+    data = json.loads(annot_file.read_text())
+    for item in data:
+        item["image_url"] = f"/api/test-samples/{item['filename']}"
+    return {"test_samples": data}
+
+
+@app.get("/api/test-samples/{filename}")
+def get_test_sample_image(filename: str):
+    """Serves an official Stanford Cars test set image."""
+    file_path = TEST_SAMPLES_DIR / filename
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Test image not found")
+    return FileResponse(file_path, media_type="image/jpeg")
 
 
 @app.get("/api/samples/{filename}")
@@ -175,10 +209,11 @@ def get_sample_image(filename: str):
 async def analyze_image(
     file: Optional[UploadFile] = File(None),
     preset_id: Optional[str] = Form(None),
+    test_sample_filename: Optional[str] = Form(None),
 ):
     """
     Analyzes an input vehicle image through the full hybrid framework.
-    Accepts either a direct file upload or a preset_id from sample presets.
+    Accepts direct file upload, preset_id, or test_sample_filename.
     """
     image_bytes = None
 
@@ -191,6 +226,10 @@ async def analyze_image(
             preset_path = SAMPLES_DIR / match["filename"]
             if preset_path.is_file():
                 image_bytes = preset_path.read_bytes()
+    elif test_sample_filename:
+        test_path = TEST_SAMPLES_DIR / test_sample_filename
+        if test_path.is_file():
+            image_bytes = test_path.read_bytes()
 
     if not image_bytes:
         raise HTTPException(
